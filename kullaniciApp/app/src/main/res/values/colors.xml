@@ -7,4 +7,9 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- 👇 Alt menüye özel renkler -->
+    <color name="nav_selected">#0C4A6E</color>     <!-- Seçili ikon/yazı rengi -->
+    <color name="nav_unselected">#9CA3AF</color>   <!-- Seçili olmayan ikon/yazı -->
+    <color name="nav_background">#F9FAFB</color>   <!-- Menü arka planı -->
 </resources>

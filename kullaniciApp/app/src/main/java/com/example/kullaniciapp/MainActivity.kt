@@ -22,17 +22,37 @@ class MainActivity : AppCompatActivity() {
         val passwordEditText = findViewById<EditText>(R.id.editTextPassword)
         val loginButton = findViewById<Button>(R.id.buttonLogin)
         val registerButton = findViewById<Button>(R.id.buttonRegister)
+        val guestLoginButton = findViewById<Button>(R.id.btnGuestLogin)
 
         loginButton.setOnClickListener {
             val email = emailEditText.text.toString().trim()
             val password = passwordEditText.text.toString().trim()
+
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Lütfen e-posta ve şifre alanlarını doldurun", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             loginUser(email, password)
         }
 
         registerButton.setOnClickListener {
-            val email = emailEditText.text.toString().trim()
-            val password = passwordEditText.text.toString().trim()
-            registerUser(email, password)
+            startActivity(Intent(this, KayitOlActivity::class.java))
+        }
+
+
+        // 👇 Anonim giriş işlemi
+        guestLoginButton.setOnClickListener {
+            auth.signInAnonymously()
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        Toast.makeText(this, "Kayıt olmadan giriş yapıldı", Toast.LENGTH_SHORT).show()
+                        startActivity(Intent(this, KayitsizGirisActivity::class.java))
+                        finish()
+                    } else {
+                        Toast.makeText(this, "Anonim giriş başarısız: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
         }
     }
 
@@ -48,7 +68,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
     }
-
 
     private fun registerUser(email: String, password: String) {
         auth.createUserWithEmailAndPassword(email, password)

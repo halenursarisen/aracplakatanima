@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Uygulama ana teması -->
     <style name="Theme.KullaniciApp" parent="Theme.AppCompat.DayNight.NoActionBar" />
+
+    <!-- BottomNavigationView yazı boyutu ayarı -->
+    <style name="BottomNavStyle" parent="Widget.MaterialComponents.BottomNavigationView">
+    </style>
+
 </resources>
