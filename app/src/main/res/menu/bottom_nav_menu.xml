@@ -1,0 +1,23 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_home"
+        android:title="Anasayfa"
+        android:icon="@android:drawable/ic_menu_view" />
+
+    <item
+        android:id="@+id/nav_notifications"
+        android:title="Bildirimler"
+        android:icon="@android:drawable/ic_menu_info_details" />
+
+    <item
+        android:id="@+id/nav_chatbot"
+        android:title="Chatbot"
+        android:icon="@android:drawable/ic_menu_send" />
+
+    <item
+        android:id="@+id/nav_profile"
+        android:title="Hesabım"
+        android:icon="@android:drawable/ic_menu_myplaces" />
+
+</menu>
