@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "492116282450",
+    "project_id": "aracplakatanima",
+    "storage_bucket": "aracplakatanima.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:492116282450:android:54351bc9c41013a1e1a38b",
+        "android_client_info": {
+          "package_name": "com.example.kullaniciapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHleACQHj4sUl4RxxDj7MwEOmhh1KnDsQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
