@@ -28,21 +28,29 @@ class BildirimFragment : Fragment() {
         adapter = BildirimAdapter(bildirimList)
         recyclerView.adapter = adapter
 
-        // Firebase verilerini çek
+        // ✅ TEST VERİSİ — Firebase çalışmasa bile bu görünmeli!
+        bildirimList.add(Bildirim("TEST mesajı", "Şimdi", "success"))
+        adapter.notifyDataSetChanged()
+
+        // 🔧 Firebase'den bildirimleri çek
         FirebaseDatabase.getInstance().reference
+            .child("adminMessages")
             .child("bildirimler")
             .get()
             .addOnSuccessListener { snapshot ->
                 if (snapshot.exists()) {
                     bildirimList.clear()
                     for (child in snapshot.children) {
-                        val mesaj = child.child("mesaj").value.toString()
-                        val zaman = child.child("zaman").value.toString()
-                        val tip = child.child("tip").value.toString()
+                        val mesaj = child.child("mesaj").value?.toString() ?: continue
+                        val zaman = child.child("zaman").value?.toString() ?: ""
+                        val tip = child.child("tip").value?.toString() ?: "info"
                         bildirimList.add(Bildirim(mesaj, zaman, tip))
                     }
                     adapter.notifyDataSetChanged()
                 }
+            }
+            .addOnFailureListener { exception ->
+                exception.printStackTrace()
             }
 
         return view

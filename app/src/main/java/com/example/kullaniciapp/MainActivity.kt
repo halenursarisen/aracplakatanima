@@ -28,83 +28,77 @@ class MainActivity : AppCompatActivity() {
         val registerButton = findViewById<Button>(R.id.buttonRegister)
         val guestLoginButton = findViewById<Button>(R.id.btnGuestLogin)
 
+        // Kullanıcı girişi
         loginButton.setOnClickListener {
             val email = emailEditText.text.toString().trim()
             val password = passwordEditText.text.toString().trim()
-
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Lütfen e-posta ve şifre girin", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+                showToast("Lütfen e-posta ve şifre girin")
+            } else {
+                loginUser(email, password)
             }
-
-            loginUser(email, password)
         }
 
+        // Kullanıcı kaydı
         registerButton.setOnClickListener {
             val email = emailEditText.text.toString().trim()
             val password = passwordEditText.text.toString().trim()
-
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Lütfen e-posta ve şifre girin", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+                showToast("Lütfen e-posta ve şifre girin")
+            } else {
+                registerUser(email, password)
             }
-
-            registerUser(email, password)
         }
 
+        // Misafir girişi
         guestLoginButton.setOnClickListener {
-            auth.signInAnonymously()
-                .addOnCompleteListener(this) { task ->
-                    if (task.isSuccessful) {
-                        Toast.makeText(this, "Misafir girişi yapıldı", Toast.LENGTH_SHORT).show()
-                        bildirimGonder("Misafir girişi yapıldı", "info")
-                        startActivity(Intent(this, KayitsizGirisActivity::class.java))
-                        finish()
-                    } else {
-                        Toast.makeText(this, "Anonim giriş başarısız: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
-                    }
+            auth.signInAnonymously().addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    showToast("Misafir girişi yapıldı")
+                    bildirimGonder("Misafir girişi yapıldı", "info")
+                    startActivity(Intent(this, KayitsizGirisActivity::class.java))
+                    finish()
+                } else {
+                    showToast("Anonim giriş başarısız: ${task.exception?.message}")
                 }
+            }
         }
     }
 
     private fun loginUser(email: String, password: String) {
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    Toast.makeText(this, "Giriş başarılı!", Toast.LENGTH_SHORT).show()
-                    bildirimGonder("$email giriş yaptı", "success")
-                    startActivity(Intent(this, MainBottomActivity::class.java))
-                    finish()
-                } else {
-                    Toast.makeText(this, "Giriş başarısız: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
-                }
+        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this) { task ->
+            if (task.isSuccessful) {
+                showToast("Giriş başarılı!")
+                bildirimGonder("$email giriş yaptı", "success")
+                startActivity(Intent(this, MainBottomActivity::class.java))
+                finish()
+            } else {
+                showToast("Giriş başarısız: ${task.exception?.message}")
             }
+        }
     }
 
     private fun registerUser(email: String, password: String) {
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    Toast.makeText(this, "Kayıt başarılı!", Toast.LENGTH_SHORT).show()
-                    bildirimGonder("$email kayıt oldu", "info")
-                    startActivity(Intent(this, MainBottomActivity::class.java))
-                    finish()
-                } else {
-                    Toast.makeText(this, "Kayıt başarısız: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
-                }
+        auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this) { task ->
+            if (task.isSuccessful) {
+                showToast("Kayıt başarılı!")
+                bildirimGonder("$email kayıt oldu", "info")
+                startActivity(Intent(this, MainBottomActivity::class.java))
+                finish()
+            } else {
+                showToast("Kayıt başarısız: ${task.exception?.message}")
             }
+        }
     }
 
     private fun bildirimGonder(mesaj: String, tip: String) {
         val database = FirebaseDatabase.getInstance().reference
         val zaman = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
-
-        val bildirim = mapOf(
-            "mesaj" to mesaj,
-            "zaman" to zaman,
-            "tip" to tip
-        )
-
+        val bildirim = mapOf("mesaj" to mesaj, "zaman" to zaman, "tip" to tip)
         database.child("bildirimler").push().setValue(bildirim)
+    }
+
+    private fun showToast(mesaj: String) {
+        Toast.makeText(this, mesaj, Toast.LENGTH_SHORT).show()
     }
 }
