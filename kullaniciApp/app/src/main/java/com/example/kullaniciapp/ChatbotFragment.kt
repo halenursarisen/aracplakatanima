@@ -1,59 +1,144 @@
 package com.example.kullaniciapp
 
+import android.app.AlertDialog
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.*
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ChatbotFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ChatbotFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: ChatAdapter
+    private lateinit var editTextMessage: EditText
+    private lateinit var buttonSend: Button
+    private val messages = mutableListOf<ChatMessage>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_chatbot, container, false)
+        val view = inflater.inflate(R.layout.fragment_chatbot, container, false)
+
+        recyclerView = view.findViewById(R.id.chatRecyclerView)
+        editTextMessage = view.findViewById(R.id.editTextMessage)
+        buttonSend = view.findViewById(R.id.buttonSend)
+
+        adapter = ChatAdapter(messages)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        recyclerView.adapter = adapter
+
+        adapter.clickListener = { selectedText ->
+            if (selectedText == "Admin'e sor") {
+                showAdminMessageDialog()
+            } else {
+                addMessage(selectedText, isUser = true)
+                getBotResponse(selectedText)
+            }
+        }
+
+        val starterMessages = listOf(
+            ChatMessage("Merhaba! Ne öğrenmek istersiniz?", isUser = false),
+            ChatMessage("Plakam ne?", isUser = false, isOption = true),
+            ChatMessage("Giriş saatim?", isUser = false, isOption = true),
+            ChatMessage("Park yerim?", isUser = false, isOption = true),
+            ChatMessage("Ücret ne kadar?", isUser = false, isOption = true),
+            ChatMessage("Geçmiş ödeme?", isUser = false, isOption = true),
+            ChatMessage("Admin'e sor", isUser = false, isOption = true)
+        )
+        messages.addAll(starterMessages)
+        adapter.notifyDataSetChanged()
+        recyclerView.scrollToPosition(messages.size - 1)
+
+        buttonSend.setOnClickListener {
+            val userMessage = editTextMessage.text.toString().trim()
+            if (userMessage.isNotEmpty()) {
+                addMessage(userMessage, isUser = true)
+                editTextMessage.setText("")
+                getBotResponse(userMessage)
+            }
+        }
+
+        return view
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ChatbotFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ChatbotFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    private fun addMessage(text: String, isUser: Boolean) {
+        messages.add(ChatMessage(text, isUser))
+        adapter.notifyItemInserted(messages.size - 1)
+        recyclerView.scrollToPosition(messages.size - 1)
+    }
+
+    private fun getBotResponse(userText: String) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        ChatBot.getResponse(userText, uid) { botReply ->
+            addMessage(botReply, isUser = false)
+            addBotOptionsAgain()
+        }
+    }
+
+    private fun addBotOptionsAgain() {
+        val options = listOf(
+            ChatMessage("Plakam ne?", isUser = false, isOption = true),
+            ChatMessage("Giriş saatim?", isUser = false, isOption = true),
+            ChatMessage("Park yerim?", isUser = false, isOption = true),
+            ChatMessage("Ücret ne kadar?", isUser = false, isOption = true),
+            ChatMessage("Geçmiş ödeme?", isUser = false, isOption = true),
+            ChatMessage("Admin'e sor", isUser = false, isOption = true)
+        )
+        messages.addAll(options)
+        adapter.notifyItemRangeInserted(messages.size - options.size, options.size)
+        recyclerView.scrollToPosition(messages.size - 1)
+    }
+
+    private fun showAdminMessageDialog() {
+        val input = EditText(requireContext())
+        input.hint = "Admin'e iletmek istediğiniz mesajı yazın"
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Admin'e Mesaj Gönder")
+            .setView(input)
+            .setPositiveButton("Gönder") { dialog, _ ->
+                val messageToAdmin = input.text.toString().trim()
+                if (messageToAdmin.isNotEmpty()) {
+                    sendMessageToAdmin(messageToAdmin)
+                    addMessage("Admin'e mesajınız iletildi: \"$messageToAdmin\"", isUser = false)
                 }
+                dialog.dismiss()
+            }
+            .setNegativeButton("İptal") { dialog, _ ->
+                dialog.cancel()
+            }
+            .show()
+    }
+
+    private fun sendMessageToAdmin(message: String) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: "testUser"
+        val timestamp = System.currentTimeMillis()
+
+        val data = mapOf(
+            "userId" to uid,
+            "message" to message,
+            "timestamp" to timestamp
+        )
+
+        val ref = FirebaseDatabase.getInstance()
+            .getReference("adminMessages")
+            .push()
+
+        ref.setValue(data)
+            .addOnSuccessListener {
+                Log.d("AdminFirebase", "✅ Admin mesajı kaydedildi.")
+            }
+            .addOnFailureListener { e ->
+                Log.e("AdminFirebase", "❌ Admin mesajı hatası: ${e.message}")
             }
     }
 }

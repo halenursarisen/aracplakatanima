@@ -1,59 +1,58 @@
 package com.example.kullaniciapp
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.kullaniciapp.ui.theme.Bildirim
+import com.example.kullaniciapp.ui.theme.BildirimAdapter
+import com.google.firebase.database.FirebaseDatabase
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [BildirimFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class BildirimFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: BildirimAdapter
+    private val bildirimList = mutableListOf<Bildirim>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_bildirim, container, false)
-    }
+        val view = inflater.inflate(R.layout.fragment_bildirim, container, false)
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment BildirimFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            BildirimFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+        recyclerView = view.findViewById(R.id.bildirimRecyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        adapter = BildirimAdapter(bildirimList)
+        recyclerView.adapter = adapter
+
+        // Örnek test verisi
+        bildirimList.add(Bildirim("TEST mesajı", "Şimdi", "success"))
+        adapter.notifyDataSetChanged()
+
+        // Firebase'den bildirimleri çek
+        FirebaseDatabase.getInstance().reference
+            .child("adminMessages")
+            .child("bildirimler")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    bildirimList.clear()
+                    for (child in snapshot.children) {
+                        val mesaj = child.child("mesaj").value?.toString() ?: continue
+                        val zaman = child.child("zaman").value?.toString() ?: ""
+                        val tip = child.child("tip").value?.toString() ?: "info"
+                        bildirimList.add(Bildirim(mesaj, zaman, tip))
+                    }
+                    adapter.notifyDataSetChanged()
                 }
             }
+            .addOnFailureListener { exception ->
+                exception.printStackTrace()
+            }
+
+        return view
     }
 }
