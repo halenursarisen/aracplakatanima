@@ -1,0 +1,104 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:id="@+id/textAnimUyari"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚠️ Değerli eşyalarınızı araçta bırakmayın!"
+            android:textColor="#B91C1C"
+            android:textSize="16sp"
+            android:layout_marginBottom="12dp"/>
+
+        <TextView
+            android:id="@+id/textPlaka"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Plaka: -"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/textGirisSaati"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Giriş Saati: -"/>
+
+        <TextView
+            android:id="@+id/textParkAlani"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Park Alanı: -"/>
+
+        <TextView
+            android:id="@+id/textUcret"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Toplam Ücret: -"/>
+
+        <TextView
+            android:id="@+id/textTarife"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tarife: İlk 30 dk ücretsiz"
+            android:layout_marginBottom="12dp"/>
+
+        <TextView
+            android:id="@+id/textGecenSure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Geçen park süresi: 00:00:00"
+            android:layout_marginBottom="16dp"/>
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/infoViewPager"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:layout_marginBottom="12dp"/>
+
+        <com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
+            android:id="@+id/dotsIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"/>
+
+        <Button
+            android:id="@+id/buttonOde"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ödeme Yap"
+            android:backgroundTint="#0C4A6E"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="8dp"/>
+
+        <Button
+            android:id="@+id/buttonRezervasyon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rezervasyon Oluştur"
+            android:backgroundTint="#A0A0A0"
+            android:textColor="#FFFFFF"
+            android:visibility="gone"
+            android:layout_marginBottom="8dp"/>
+
+        <Button
+            android:id="@+id/buttonKayitOl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Kayıt Ol"
+            android:backgroundTint="#10B981"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="8dp"/>
+
+    </LinearLayout>
+</ScrollView>

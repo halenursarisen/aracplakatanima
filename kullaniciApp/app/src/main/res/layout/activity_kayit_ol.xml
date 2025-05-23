@@ -42,6 +42,18 @@
             android:backgroundTint="#0C4A6E"
             android:textColor="#111827" />
 
+        <!-- Plaka -->
+        <EditText
+            android:id="@+id/editTextPlaka"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Plaka (örn: 34ABC123)"
+            android:inputType="text"
+            android:maxLength="10"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#0C4A6E"
+            android:textColor="#111827" />
+
         <!-- Şifre -->
         <EditText
             android:id="@+id/editTextPassword"
