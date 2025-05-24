@@ -63,6 +63,16 @@
             android:textColor="#FFFFFF"
             android:layout_marginBottom="12dp" />
 
+        <!-- Şifremi Unuttum (YENİ) -->
+        <Button
+            android:id="@+id/btnResetPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Şifremi Unuttum"
+            android:backgroundTint="#FBBF24"
+            android:textColor="#111827"
+            android:layout_marginBottom="12dp" />
+
         <!-- Kayıt Ol ve Kayıtsız Devam Yan Yana -->
         <LinearLayout
             android:layout_width="match_parent"

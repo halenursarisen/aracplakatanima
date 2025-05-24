@@ -59,7 +59,7 @@
             android:id="@+id/editTextPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Şifre"
+            android:hint="Şifre(en az 6 karakter olmalı)"
             android:inputType="textPassword"
             android:layout_marginBottom="24dp"
             android:backgroundTint="#0C4A6E"

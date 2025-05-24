@@ -23,6 +23,7 @@ class MainActivity : AppCompatActivity() {
         val loginButton = findViewById<Button>(R.id.buttonLogin)
         val registerButton = findViewById<Button>(R.id.buttonRegister)
         val guestLoginButton = findViewById<Button>(R.id.btnGuestLogin)
+        val resetPasswordButton = findViewById<Button>(R.id.btnResetPassword) // 💡 yeni eklenen buton
 
         loginButton.setOnClickListener {
             val email = emailEditText.text.toString().trim()
@@ -40,7 +41,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, KayitOlActivity::class.java))
         }
 
-
         // 👇 Anonim giriş işlemi
         guestLoginButton.setOnClickListener {
             auth.signInAnonymously()
@@ -53,6 +53,11 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(this, "Anonim giriş başarısız: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
+        }
+
+        // 👇 Şifremi Unuttum sayfasına yönlendirme
+        resetPasswordButton.setOnClickListener {
+            startActivity(Intent(this, SifremiUnuttumActivity::class.java))
         }
     }
 
