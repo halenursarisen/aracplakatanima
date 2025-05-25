@@ -1,59 +1,83 @@
 package com.example.kullaniciapp
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ProgressBar
+import android.widget.TextView
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [HesabimFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class HesabimFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var textName: TextView
+    private lateinit var textPlate: TextView
+    private lateinit var logoutButton: Button
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_hesabim, container, false)
-    }
+        val view = inflater.inflate(R.layout.fragment_hesabim, container, false)
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment HesabimFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            HesabimFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+        // View bağlantıları
+        textName = view.findViewById(R.id.textName)
+        textPlate = view.findViewById(R.id.textPlate)
+        logoutButton = view.findViewById(R.id.buttonLogout)
+        progressBar = view.findViewById(R.id.progressBar)
+
+        // Firebase'den UID'yi al
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        Log.d("GERCEK_UID", "Aktif UID: $uid")
+
+        if (uid != null) {
+            progressBar.visibility = View.VISIBLE
+
+            // Realtime DB bağlantısı (custom URL ile)
+            val database = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+            val userRef = database.getReference("kullanicilar").child(uid)
+
+            userRef.get()
+                .addOnSuccessListener { snapshot ->
+                    Log.d("FIREBASE_DATA", "Snapshot exists: ${snapshot.exists()}, value: ${snapshot.value}")
+
+                    if (snapshot.exists()) {
+                        val adSoyad = snapshot.child("adSoyad").getValue(String::class.java) ?: "Ad boş"
+                        val plaka = snapshot.child("plaka").getValue(String::class.java) ?: "Plaka boş"
+
+                        textName.text = adSoyad
+                        textPlate.text = plaka
+
+                        Toast.makeText(requireContext(), "✅ Veri başarıyla alındı", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(requireContext(), "❗ Veri bulunamadı", Toast.LENGTH_SHORT).show()
+                    }
+
+                    progressBar.visibility = View.GONE
                 }
-            }
+                .addOnFailureListener { e ->
+                    Log.e("FIREBASE_HATA", "Veri alınamadı: ${e.message}")
+                    Toast.makeText(requireContext(), "Veri alınırken hata oluştu ❌", Toast.LENGTH_SHORT).show()
+                    progressBar.visibility = View.GONE
+                }
+        } else {
+            Toast.makeText(requireContext(), "Giriş yapılmamış", Toast.LENGTH_SHORT).show()
+        }
+
+        // Çıkış butonu
+        logoutButton.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+            startActivity(Intent(requireContext(), KayitsizGirisActivity::class.java))
+            activity?.finish()
+        }
+
+        return view
     }
 }

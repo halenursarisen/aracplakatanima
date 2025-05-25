@@ -44,7 +44,6 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.13"
     }
-
 }
 
 dependencies {
@@ -76,6 +75,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth:22.3.0")
     implementation("com.google.firebase:firebase-database-ktx:20.3.0")
     implementation("androidx.recyclerview:recyclerview:1.3.1")
-    implementation ("androidx.fragment:fragment-ktx:1.6.1")
+    implementation("androidx.fragment:fragment-ktx:1.6.1")
 }
-apply(plugin = "com.google.gms.google-services")
+
+// apply satırı gerekli değil çünkü plugins {} bloğunda zaten var
