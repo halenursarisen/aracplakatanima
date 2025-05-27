@@ -5,4 +5,3 @@ data class ChatMessage(
     val isUser: Boolean,
     val isOption: Boolean = false
 )
-

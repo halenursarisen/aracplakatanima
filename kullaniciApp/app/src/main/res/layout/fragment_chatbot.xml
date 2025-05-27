@@ -7,7 +7,7 @@
     android:background="#F7F9FC"
     tools:context=".ChatbotFragment">
 
-    <!-- Üst Başlık Alanı -->
+    <!-- Üst Başlık ve Menü Alanı -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -30,12 +30,12 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:background="@android:color/transparent"
-            android:src="@android:drawable/ic_menu_more" />
+            android:src="@android:drawable/ic_menu_delete"
+            android:contentDescription="Sohbeti Temizle"
+            android:padding="8dp" />
     </RelativeLayout>
 
-
-
-    <!-- Mesajlaşma Alanı -->
+    <!-- Mesaj Listesi -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRecyclerView"
         android:layout_width="match_parent"
@@ -43,7 +43,7 @@
         android:layout_weight="1"
         android:padding="8dp"
         android:clipToPadding="false"
-        android:scrollbars="vertical"/>
+        android:scrollbars="vertical" />
 
     <!-- Mesaj Gönderme Alanı -->
     <LinearLayout

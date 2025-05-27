@@ -13,7 +13,7 @@
         android:padding="16dp"
         android:gravity="center_horizontal">
 
-        <!-- ⚠️ Kayan Uyarı Mesajı -->
+        <!-- ⚠️ Kayan Uyarı -->
         <TextView
             android:id="@+id/textAnimUyari"
             android:layout_width="match_parent"
@@ -21,20 +21,20 @@
             android:text="⚠️ Değerli eşyalarınızı araçlarınızda bırakmayın, işletme sorumlu değildir."
             android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="#000000"
+            android:textColor="#000"
             android:background="#FFF59D"
             android:padding="8dp"
-            android:gravity="center_horizontal" />
-
+            android:gravity="center" />
 
         <!-- 👤 Kullanıcı Ad Soyad -->
         <TextView
             android:id="@+id/textKullaniciAdSoyad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hoş geldin, Hale Sarışen 👋"
+            android:text="Hoş geldin!"
             android:textSize="20sp"
             android:textStyle="bold"
+            android:layout_marginTop="12dp"
             android:layout_marginBottom="16dp" />
 
         <!-- 🕓 Geçen Süre -->
@@ -44,31 +44,27 @@
             android:layout_height="wrap_content"
             android:text="Geçen park süresi: 00:00:00"
             android:textSize="18sp"
-            android:textColor="#333333"
+            android:textColor="#333"
             android:layout_marginBottom="16dp" />
 
-        <!-- 🔄 Kaydırmalı Bilgi Kartları -->
+        <!-- 🔄 Bilgi Kartları -->
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/infoViewPager"
             android:layout_width="match_parent"
             android:layout_height="140dp"
             android:layout_marginBottom="16dp"
-            android:clipToPadding="false"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp" />
+            android:clipToPadding="false" />
 
         <com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
             android:id="@+id/dotsIndicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="-60dp"
-            android:layout_marginBottom="32dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="24dp"
             app:dotsColor="#BDBDBD"
             app:selectedDotColor="#1976D2" />
 
-
-        <!-- 🚗 Park Bilgileri Kartı -->
+        <!-- 🚗 Park Bilgileri -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -82,25 +78,25 @@
                 android:id="@+id/textPlaka"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Plaka: 34ABC123"
+                android:text="Plaka:"
                 android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/textGirisSaati"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Giriş Saati: 13:45"
+                android:text="Giriş Saati:"
                 android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/textParkAlani"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Park Alanı: B3"
+                android:text="Park Alanı:"
                 android:textSize="16sp" />
         </LinearLayout>
 
-        <!-- 💸 Ödeme Bilgisi Kartı -->
+        <!-- 💸 Ödeme Bilgisi -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -114,7 +110,7 @@
                 android:id="@+id/textUcret"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Toplam Ücret: 12,50₺"
+                android:text="Toplam Ücret:"
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
@@ -122,7 +118,7 @@
                 android:id="@+id/textTarife"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="İlk 30 dk ücretsiz, her ek saat 10₺"
+                android:text="Tarife bilgisi"
                 android:textSize="14sp"
                 android:layout_marginBottom="8dp" />
 
@@ -133,7 +129,7 @@
                 android:text="ŞİMDİ ÖDE" />
         </LinearLayout>
 
-        <!-- 📆 Rezervasyon Kartı -->
+        <!-- 📆 Rezervasyon -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -141,10 +137,9 @@
             android:background="#E8F5E9"
             android:padding="12dp"
             android:elevation="2dp"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="16dp">
 
             <TextView
-                android:id="@+id/textRezervasyonBaslik"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Rezervasyon"
@@ -164,7 +159,7 @@
             android:id="@+id/textGecmisOdeme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Geçmiş Ödeme: 15 Nisan – 20₺"
+            android:text="Geçmiş Ödeme:"
             android:textSize="14sp"
             android:layout_marginBottom="16dp" />
     </LinearLayout>

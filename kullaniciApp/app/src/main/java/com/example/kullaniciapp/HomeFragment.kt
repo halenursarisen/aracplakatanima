@@ -13,19 +13,23 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.database.*
 import com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 class HomeFragment : Fragment() {
 
     private lateinit var textGecenSure: TextView
     private lateinit var textKullaniciAdSoyad: TextView
+    private lateinit var databaseRef: DatabaseReference
     private var startTimeMillis: Long = 0L
     private val handler = Handler(Looper.getMainLooper())
 
     private var currentPage = 0
     private val autoScrollHandler = Handler(Looper.getMainLooper())
-    private lateinit var autoScrollRunnable: Runnable
+    private var autoScrollRunnable: Runnable? = null  // ✅ nullable yaptık
 
     private val timerRunnable = object : Runnable {
         override fun run() {
@@ -45,93 +49,125 @@ class HomeFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
-        // 👤 Kullanıcı adı
+        // Kullanıcı adı
         textKullaniciAdSoyad = view.findViewById(R.id.textKullaniciAdSoyad)
-        val userEmail = FirebaseAuth.getInstance().currentUser?.email
-        val displayName = userEmail ?: "Kullanıcı"
-        textKullaniciAdSoyad.text = "Hoş geldin, $displayName 👋"
+        val auth = FirebaseAuth.getInstance()
+        val uid = auth.currentUser?.uid
 
-        // 🔔 Animasyon
+        if (uid != null) {
+            val userRef = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+                .getReference("kullanicilar").child(uid)
+
+            userRef.child("adSoyad").get().addOnSuccessListener { snapshot ->
+                val userName = snapshot.getValue(String::class.java)
+                val displayName = userName ?: auth.currentUser?.email ?: "Kullanıcı"
+                textKullaniciAdSoyad.text = "Hoş geldin, $displayName 👋"
+            }.addOnFailureListener {
+                val fallbackName = auth.currentUser?.email ?: "Kullanıcı"
+                textKullaniciAdSoyad.text = "Hoş geldin, $fallbackName 👋"
+            }
+        }
+
+        // Animasyon
         val textAnim = view.findViewById<TextView>(R.id.textAnimUyari)
         val anim = AnimationUtils.loadAnimation(requireContext(), R.anim.scroll_text)
         textAnim.startAnimation(anim)
 
-        // ⏱ Geçen süre
+        // Geçen süre text
         textGecenSure = view.findViewById(R.id.textGecenSure)
 
-        // 🔄 ViewPager2 ve Dots
+        // ViewPager2 ve Dots
         val viewPager = view.findViewById<ViewPager2>(R.id.infoViewPager)
         val dotsIndicator = view.findViewById<WormDotsIndicator>(R.id.dotsIndicator)
 
-        val infoCards = listOf(
-            InfoCard("Otopark Durumu", "Açık – Giriş serbest", android.R.drawable.ic_dialog_info),
-            InfoCard("Doluluk", "18/30 dolu (A1-A10 dolu)", android.R.drawable.ic_menu_agenda),
-            InfoCard("Kamera Durumu", "Kamera sistemi aktif", android.R.drawable.ic_menu_camera),
-            InfoCard("Giriş/Çıkış", "Giriş açık – Çıkış kapalı", android.R.drawable.ic_menu_directions)
-        )
+        // Firebase Realtime Database bağlantısı
+        databaseRef = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+            .getReference("systemInfo")
 
-        viewPager.adapter = InfoCardAdapter(infoCards)
-        dotsIndicator.attachTo(viewPager)
+        databaseRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val infoCards = listOf(
+                    InfoCard("Otopark Durumu", snapshot.child("otoparkDurumu").getValue(String::class.java) ?: "-", android.R.drawable.ic_dialog_info),
+                    InfoCard("Doluluk", snapshot.child("doluluk").getValue(String::class.java) ?: "-", android.R.drawable.ic_menu_agenda),
+                    InfoCard("Kamera Durumu", snapshot.child("kameraDurumu").getValue(String::class.java) ?: "-", android.R.drawable.ic_menu_camera),
+                    InfoCard("Giriş/Çıkış", snapshot.child("girisCikis").getValue(String::class.java) ?: "-", android.R.drawable.ic_menu_directions)
+                )
+                viewPager.adapter = InfoCardAdapter(infoCards)
+                dotsIndicator.attachTo(viewPager)
 
-        // ✅ Otomatik scroll başlat
-        autoScrollRunnable = object : Runnable {
-            override fun run() {
-                val itemCount = viewPager.adapter?.itemCount ?: 0
-                if (itemCount > 0) {
-                    currentPage = (currentPage + 1) % itemCount
-                    viewPager.setCurrentItem(currentPage, true)
-                    autoScrollHandler.postDelayed(this, 2000)
+                // Kullanıcı ve park bilgileri
+                view.findViewById<TextView>(R.id.textPlaka).text =
+                    "Plaka: ${snapshot.child("plaka").getValue(String::class.java) ?: "-"}"
+
+                view.findViewById<TextView>(R.id.textParkAlani).text =
+                    "Park Alanı: ${snapshot.child("parkAlani").getValue(String::class.java) ?: "-"}"
+
+                val girisSaatiStr = snapshot.child("girisSaati").getValue(String::class.java) ?: "-"
+                view.findViewById<TextView>(R.id.textGirisSaati).text =
+                    "Giriş Saati: $girisSaatiStr"
+
+                // Abonelik ve maksimum ücret bilgileri
+                val abonelikDurumu = snapshot.child("abonelikDurumu").getValue(String::class.java) ?: "normal"
+                val maksimumGunlukUcret = snapshot.child("maksimumGunlukUcret").getValue(Int::class.java) ?: 100
+
+                // Geçen süreyi hesapla ve sayaç başlat
+                if (girisSaatiStr != "-") {
+                    val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+                    try {
+                        val girisDate = sdf.parse(girisSaatiStr)
+                        startTimeMillis = girisDate.time
+                        handler.post(timerRunnable) // canlı sayaç başlat
+
+                        // Ücret hesaplama
+                        val now = Date()
+                        val diffMillis = now.time - girisDate.time
+                        val diffMinutes = TimeUnit.MILLISECONDS.toMinutes(diffMillis)
+
+                        val toplamUcretText = view.findViewById<TextView>(R.id.textUcret)
+                        var toplamUcret = 0
+                        if (abonelikDurumu == "abonelikli") {
+                            toplamUcretText.text = "Toplam Ücret: Abonelikli (Aylık ödeme dahil)"
+                        } else {
+                            if (diffMinutes > 30) {
+                                val ekSaatler = Math.ceil((diffMinutes - 30).toDouble() / 60).toInt()
+                                toplamUcret = ekSaatler * 10
+                            }
+                            if (toplamUcret > maksimumGunlukUcret) {
+                                toplamUcret = maksimumGunlukUcret
+                            }
+                            toplamUcretText.text = "Toplam Ücret: $toplamUcret₺ (Maksimum günlük)"
+                        }
+
+                    } catch (e: Exception) {
+                        textGecenSure.text = "Geçen park süresi: Hesaplanamadı"
+                    }
+                } else {
+                    textGecenSure.text = "Geçen park süresi: -"
                 }
+
+                view.findViewById<TextView>(R.id.textTarife).text =
+                    "Tarife: İlk 30 dk ücretsiz, her ek saat 10₺, maksimum günlük $maksimumGunlukUcret₺"
+
+                view.findViewById<TextView>(R.id.textGecmisOdeme).text =
+                    "Geçmiş Ödeme: ${snapshot.child("gecmisOdeme").getValue(String::class.java) ?: "-"}"
             }
-        }
-        autoScrollHandler.postDelayed(autoScrollRunnable, 2000)
 
-        // 📦 Firestore'dan kullanıcı verisini çek
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
-        if (uid != null) {
-            val db = FirebaseFirestore.getInstance()
-            val userRef = db.collection("users").document(uid)
-
-            userRef.get().addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    view.findViewById<TextView>(R.id.textPlaka).text =
-                        "Plaka: ${document.getString("plaka") ?: "-"}"
-
-                    view.findViewById<TextView>(R.id.textGirisSaati).text =
-                        "Giriş Saati: ${document.getString("giris_saati") ?: "-"}"
-
-                    view.findViewById<TextView>(R.id.textParkAlani).text =
-                        "Park Alanı: ${document.getString("park_alani") ?: "-"}"
-
-                    view.findViewById<TextView>(R.id.textUcret).text =
-                        "Toplam Ücret: ${document.getString("toplam_ucret") ?: "-"}"
-
-                    view.findViewById<TextView>(R.id.textTarife).text =
-                        "Tarife: İlk 30 dk ücretsiz, her ek saat 10₺"
-
-                    view.findViewById<TextView>(R.id.textGecmisOdeme).text =
-                        "Geçmiş Ödeme: ${document.getString("gecmis_odeme") ?: "-"}"
-                }
-            }.addOnFailureListener {
+            override fun onCancelled(error: DatabaseError) {
                 Toast.makeText(requireContext(), "Veri alınamadı!", Toast.LENGTH_SHORT).show()
             }
-        }
+        })
 
-        // 💸 Ödeme
+        // Ödeme
         val buttonOde = view.findViewById<Button>(R.id.buttonOde)
         buttonOde.setOnClickListener {
             Toast.makeText(requireContext(), "Ödeme işlemi başlatıldı.", Toast.LENGTH_SHORT).show()
         }
 
-        // 📆 Rezervasyon
+        // Rezervasyon
         val buttonRezervasyon = view.findViewById<Button>(R.id.buttonRezervasyon)
         buttonRezervasyon.setOnClickListener {
             Toast.makeText(requireContext(), "Rezervasyon ekranı yakında!", Toast.LENGTH_SHORT).show()
         }
-
-        // Sayaç başlat
-        startTimeMillis = System.currentTimeMillis() - (12 * 60 * 1000)
-        handler.post(timerRunnable)
 
         return view
     }
@@ -139,6 +175,8 @@ class HomeFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         handler.removeCallbacks(timerRunnable)
-        autoScrollHandler.removeCallbacks(autoScrollRunnable)
+        autoScrollRunnable?.let {
+            autoScrollHandler.removeCallbacks(it)
+        }
     }
 }

@@ -67,6 +67,10 @@ dependencies {
     implementation("com.tbuonomo:dotsindicator:4.3")
     implementation("com.google.firebase:firebase-firestore:24.10.0")
     implementation("androidx.fragment:fragment-ktx:1.6.1")
+    implementation ("com.google.android.material:material:1.11.0")
+    implementation("androidx.recyclerview:recyclerview:1.3.1")
+
+
 
 
 

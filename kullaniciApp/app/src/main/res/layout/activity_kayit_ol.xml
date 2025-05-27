@@ -59,7 +59,7 @@
             android:id="@+id/editTextPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Şifre(en az 6 karakter olmalı)"
+            android:hint="Şifre (en az 6 karakter olmalı)"
             android:inputType="textPassword"
             android:layout_marginBottom="24dp"
             android:backgroundTint="#0C4A6E"
@@ -93,5 +93,16 @@
                 android:layout_marginStart="8dp" />
         </LinearLayout>
 
+        <!-- Uyarı Metni -->
+        <TextView
+            android:id="@+id/textWarning"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="❗ Kiralık Araçlar Lütfen 'Misafir Giriş' Kısmından giriniz"
+            android:textColor="#FF0000"
+            android:textSize="14sp"
+            android:textStyle="italic"
+            android:layout_marginTop="16dp"
+            android:layout_gravity="center_horizontal" />
     </LinearLayout>
 </ScrollView>
