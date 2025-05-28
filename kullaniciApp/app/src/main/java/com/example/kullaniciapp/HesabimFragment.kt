@@ -11,13 +11,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import android.os.Build
-
 
 class HesabimFragment : Fragment() {
 
@@ -29,6 +29,7 @@ class HesabimFragment : Fragment() {
     private lateinit var editPhoneButton: ImageButton
     private lateinit var addPlateButton: ImageButton
     private lateinit var logoutButton: Button
+    private lateinit var editPasswordButton: ImageButton
     private lateinit var progressBar: ProgressBar
     private lateinit var recyclerView: RecyclerView
     private lateinit var plakaList: MutableList<String>
@@ -48,6 +49,7 @@ class HesabimFragment : Fragment() {
         editPhoneButton = view.findViewById(R.id.buttonEditPhone)
         addPlateButton = view.findViewById(R.id.buttonAddPlate)
         logoutButton = view.findViewById(R.id.buttonLogout)
+        editPasswordButton = view.findViewById(R.id.buttonEditPassword)
         recyclerView = view.findViewById(R.id.recyclerViewPlates)
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -168,6 +170,10 @@ class HesabimFragment : Fragment() {
                 .show()
         }
 
+        editPasswordButton.setOnClickListener {
+            showPasswordChangeDialog(auth)
+        }
+
         logoutButton.setOnClickListener {
             auth.signOut()
             startActivity(Intent(requireContext(), MainActivity::class.java))
@@ -175,6 +181,44 @@ class HesabimFragment : Fragment() {
         }
 
         return view
+    }
+
+    private fun showPasswordChangeDialog(auth: FirebaseAuth) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_change_password, null)
+        val currentPasswordInput = dialogView.findViewById<EditText>(R.id.inputCurrentPassword)
+        val newPasswordInput = dialogView.findViewById<EditText>(R.id.inputNewPassword)
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Şifre Değiştir")
+            .setView(dialogView)
+            .setPositiveButton("Güncelle") { _, _ ->
+                val currentPassword = currentPasswordInput.text.toString()
+                val newPassword = newPasswordInput.text.toString()
+
+                if (currentPassword.isEmpty() || newPassword.isEmpty()) {
+                    Toast.makeText(requireContext(), "❗ Tüm alanları doldurun!", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
+                val user = auth.currentUser
+                val credential = EmailAuthProvider.getCredential(user?.email!!, currentPassword)
+
+                user.reauthenticate(credential).addOnCompleteListener { authTask ->
+                    if (authTask.isSuccessful) {
+                        user.updatePassword(newPassword).addOnCompleteListener { updateTask ->
+                            if (updateTask.isSuccessful) {
+                                Toast.makeText(requireContext(), "✅ Şifre güncellendi!", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(requireContext(), "❌ Güncelleme hatası: ${updateTask.exception?.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    } else {
+                        Toast.makeText(requireContext(), "❗ Mevcut şifre yanlış!", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("İptal", null)
+            .show()
     }
 
     private fun loadUserData(ref: DatabaseReference) {
@@ -228,7 +272,6 @@ class HesabimFragment : Fragment() {
                 }
             }
 
-
             kaskoDateStr?.let {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     try {
@@ -242,7 +285,6 @@ class HesabimFragment : Fragment() {
                     }
                 }
             }
-
         }
     }
 

@@ -129,6 +129,57 @@
             </RelativeLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- SİFRE İSLEMLERİ -->
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="#F1F5F9">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Şifre İşlemleri"
+                        android:textColor="#0C4A6E"
+                        android:textStyle="bold"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/textPasswordInfo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="*********"
+                        android:textColor="#6B7280"
+                        android:textSize="12sp"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/buttonEditPassword"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_alignParentEnd="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_edit"
+                    android:contentDescription="Şifreyi Düzenle" />
+            </RelativeLayout>
+        </androidx.cardview.widget.CardView>
+
+
+
         <!-- Mail Kartı (düzenlenemez) -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -204,6 +255,7 @@
             android:backgroundTint="#E5E7EB"
             android:textColor="#111827"
             android:layout_marginTop="32dp" />
+
         <View
             android:layout_width="match_parent"
             android:layout_height="100dp" />
