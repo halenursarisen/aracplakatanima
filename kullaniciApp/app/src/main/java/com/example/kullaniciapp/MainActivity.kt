@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
             auth.signInAnonymously()
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
-                        Toast.makeText(this, "Kayıt olmadan giriş yapıldı", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Kayıt olmadan giriş yapılacak", Toast.LENGTH_SHORT).show()
                         startActivity(Intent(this, KayitsizGirisActivity::class.java))
                         finish()
                     } else {
