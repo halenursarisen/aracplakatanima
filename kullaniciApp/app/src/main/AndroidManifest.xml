@@ -22,6 +22,8 @@
         <activity android:name=".KayitsizGirisActivity" android:exported="false" />
         <activity android:name=".MisafirHomeActivity" />
         <activity android:name=".SifremiUnuttumActivity" />
+        <activity android:name=".AdminHomeActivity" />
+
 
 
 

@@ -28,7 +28,8 @@ class KayitOlActivity : AppCompatActivity() {
         buttonGeriDon = findViewById(R.id.buttonBack)
 
         auth = FirebaseAuth.getInstance()
-        database = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+        database =
+            FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
 
         buttonGeriDon.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
@@ -47,9 +48,14 @@ class KayitOlActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            // ADMIN MAIL ENGELİ
+            if (email == "admin@otoparkapp.com") {
+                Toast.makeText(this, "❗ Bu e-posta ile kayıt olunamaz", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             // Türk plakası regex: 2 rakam + 1-3 harf + 2-4 rakam
             val turkPlakaRegex = Regex("^[0-9]{2}[A-Z]{1,3}[0-9]{2,4}$")
-            // Yabancı plaka basit kontrol: en az 5 karakter, harf + rakam karışık
             val yabanciPlakaRegex = Regex("^[A-Z0-9]{5,10}$")
 
             if (turkPlakaRegex.matches(plaka)) {
@@ -57,13 +63,16 @@ class KayitOlActivity : AppCompatActivity() {
             } else if (yabanciPlakaRegex.matches(plaka)) {
                 // Yabancı plakası → geçerli
             } else {
-                Toast.makeText(this, "❗ Geçerli bir Türk veya yabancı plaka girin", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "❗ Geçerli bir Türk veya yabancı plaka girin",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
             val usersRef = database.getReference("kullanicilar")
 
-            // Plaka var mı kontrolü
             usersRef.get().addOnSuccessListener { snapshot ->
                 var plakaVar = false
 
@@ -77,7 +86,6 @@ class KayitOlActivity : AppCompatActivity() {
                 if (plakaVar) {
                     Toast.makeText(this, "❌ Bu plaka zaten kayıtlı!", Toast.LENGTH_LONG).show()
                 } else {
-                    // Firebase Authentication kaydı
                     auth.createUserWithEmailAndPassword(email, password)
                         .addOnSuccessListener { result ->
                             val uid = result.user?.uid
@@ -90,22 +98,36 @@ class KayitOlActivity : AppCompatActivity() {
                                 )
                                 usersRef.child(uid).setValue(userMap)
                                     .addOnSuccessListener {
-                                        Toast.makeText(this, "✅ Kayıt başarılı!", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            this,
+                                            "✅ Kayıt başarılı!",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                         startActivity(Intent(this, MainActivity::class.java))
                                         finish()
                                     }
                                     .addOnFailureListener {
-                                        Toast.makeText(this, "❌ Veritabanına yazılamadı: ${it.message}", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(
+                                            this,
+                                            "❌ Veritabanına yazılamadı: ${it.message}",
+                                            Toast.LENGTH_LONG
+                                        ).show()
                                     }
                             }
                         }
                         .addOnFailureListener {
-                            Toast.makeText(this, "❌ Kayıt başarısız: ${it.message}", Toast.LENGTH_LONG).show()
+                            Toast.makeText(
+                                this,
+                                "❌ Kayıt başarısız: ${it.message}",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                 }
             }.addOnFailureListener {
-                Toast.makeText(this, "❌ Veritabanı hatası: ${it.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "❌ Veritabanı hatası: ${it.message}", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
+
     }
 }

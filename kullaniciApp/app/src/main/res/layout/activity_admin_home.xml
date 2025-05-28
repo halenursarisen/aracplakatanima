@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:padding="24dp"
+    android:background="#F8FAFC">
+
+    <!-- Logo -->
+    <ImageView
+        android:id="@+id/adminLogo"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@drawable/plaka_logo"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="Admin Logo" />
+
+    <!-- Başlık -->
+    <TextView
+        android:id="@+id/textAdminTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Admin Paneli"
+        android:textColor="#0C4A6E"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp" />
+
+    <!-- Plaka İşlemleri Butonu -->
+    <Button
+        android:id="@+id/buttonPlakaIslemleri"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="PLAKA İŞLEMLERİ"
+        android:backgroundTint="#3B82F6"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="16dp" />
+    <!-- ÇIKIŞ YAPAN PLAKALAR -->
+    <Button
+        android:id="@+id/buttonCikisListesi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Çıkış Geçmişi"
+        android:layout_marginTop="16dp" />
+    <Button
+        android:id="@+id/buttonYeniKullanici"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Yeni Kullanıcı Kaydı"
+        android:layout_marginTop="16dp" />
+
+
+
+    <!-- Çıkış Yap Butonu -->
+    <Button
+        android:id="@+id/buttonLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ÇIKIŞ YAP"
+        android:backgroundTint="#1E40AF"
+        android:textColor="#FFFFFF" />
+
+</LinearLayout>

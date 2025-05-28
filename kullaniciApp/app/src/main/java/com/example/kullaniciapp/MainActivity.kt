@@ -66,8 +66,18 @@ class MainActivity : AppCompatActivity() {
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     Toast.makeText(this, "Giriş başarılı!", Toast.LENGTH_SHORT).show()
-                    startActivity(Intent(this, MainBottomActivity::class.java))
-                    finish()
+
+                    val user = FirebaseAuth.getInstance().currentUser
+                    if (user != null) {
+                        if (user.email == "admin@otoparkapp.com") {
+                            // Admin paneline yönlendir
+                            startActivity(Intent(this, AdminHomeActivity::class.java))
+                        } else {
+                            // Normal kullanıcı paneline yönlendir
+                            startActivity(Intent(this, MainBottomActivity::class.java))
+                        }
+                        finish()
+                    }
                 } else {
                     Toast.makeText(this, "Giriş başarısız: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
