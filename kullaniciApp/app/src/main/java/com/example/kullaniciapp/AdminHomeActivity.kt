@@ -11,6 +11,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.text.SimpleDateFormat
 import java.util.*
+import android.os.LocaleList
+import android.text.InputType
 
 
 class AdminHomeActivity : AppCompatActivity() {
@@ -46,6 +48,29 @@ class AdminHomeActivity : AppCompatActivity() {
         buttonCikisListesi.setOnClickListener {
             showCikisYapanKullanicilarDialog()
         }
+        val buttonKullanicilar = findViewById<Button>(R.id.buttonKullanicilar)
+
+        buttonKullanicilar.setOnClickListener {
+            showKullanicilarDialog()
+        }
+        val buttonInfoKartDuzenle = findViewById<Button>(R.id.buttonInfoKartDuzenle)
+        buttonInfoKartDuzenle.setOnClickListener {
+            showInfoKartDuzenleDialog()
+        }
+        val buttonYeniBildirim = findViewById<Button>(R.id.buttonYeniBildirim)
+        buttonYeniBildirim.setOnClickListener {
+            showBildirimlerDialog()
+        }
+        val buttonChatbotMesajlar = findViewById<Button>(R.id.buttonChatbotMesajlar)
+        buttonChatbotMesajlar.setOnClickListener {
+            showChatbotMessagesDialog()
+        }
+
+
+
+
+
+
     }
 
     private fun showPlakaDialog() {
@@ -92,14 +117,46 @@ class AdminHomeActivity : AppCompatActivity() {
 
         // Elle arama kısmı
         buttonSearchPlaka.setOnClickListener {
-            val girilenPlaka = editTextSearchPlaka.text.toString().trim()
-            if (girilenPlaka.isEmpty()) {
-                Toast.makeText(this, "❌ Lütfen bir plaka girin!", Toast.LENGTH_SHORT).show()
-            } else if (plakaList.contains(girilenPlaka)) {
-                showEditPlakaDialog(girilenPlaka)
+            val girilenPlakaRaw = editTextSearchPlaka.text.toString().trim()
+            val girilenPlaka = girilenPlakaRaw.replace("\\s".toRegex(), "").uppercase()
+
+
+            val turkPlakaRegex = Regex("^[0-9]{2}[A-Z]{1,3}[0-9]{2,4}$")
+                val yabanciPlakaRegex = Regex("^[A-Z0-9]{5,10}$")
+
+
+                if (!turkPlakaRegex.matches(girilenPlaka) && !yabanciPlakaRegex.matches(girilenPlaka)) {
+                    Toast.makeText(this, "❗ Geçerli bir Türk veya yabancı plaka girin!", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                else if (plakaList.contains(girilenPlaka)) {
+                    showEditPlakaDialog(girilenPlaka)
             } else {
-                Toast.makeText(this, "❌ Plaka bulunamadı!", Toast.LENGTH_SHORT).show()
+                AlertDialog.Builder(this)
+                    .setTitle("Plaka bulunamadı")
+                    .setMessage("$girilenPlaka plakası anonim olarak eklensin mi?")
+                    .setPositiveButton("Evet") { _, _ ->
+                        val yeniAnonimRef = db.getReference("anonimKullanicilar").push()
+                        val anonimVeri = mapOf(
+                            "plaka" to girilenPlaka,
+                            "giris_tarihi" to "",
+                            "giris_saati" to "",
+                            "cikis_tarihi" to "",
+                            "cikis_saati" to "",
+                            "kat" to "",
+                            "alan" to ""
+                        )
+                        yeniAnonimRef.setValue(anonimVeri).addOnSuccessListener {
+                            Toast.makeText(this, "✅ Anonim plaka eklendi!", Toast.LENGTH_SHORT).show()
+                            showEditPlakaDialog(girilenPlaka)
+                        }.addOnFailureListener { e ->
+                            Toast.makeText(this, "❌ Anonim plaka eklenemedi: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    .setNegativeButton("Hayır", null)
+                    .show()
             }
+
         }
 
         AlertDialog.Builder(this)
@@ -372,7 +429,7 @@ class AdminHomeActivity : AppCompatActivity() {
         if (kat.isBlank() || alan.isBlank()) return
         val db = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
         val otoparkRef = db.getReference("otopark_duzeni").child(kat).child(alan)
-        otoparkRef.setValue(false).addOnSuccessListener {
+        otoparkRef.setValue("bos").addOnSuccessListener {
             Toast.makeText(this, "✅ Otopark yeri boşaltıldı: $kat - $alan", Toast.LENGTH_SHORT).show()
         }.addOnFailureListener { e ->
             Toast.makeText(this, "❌ Otopark yeri boşaltılamadı: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -383,7 +440,7 @@ class AdminHomeActivity : AppCompatActivity() {
         if (kat.isBlank() || alan.isBlank()) return
         val db = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
         val otoparkRef = db.getReference("otopark_duzeni").child(kat).child(alan)
-        otoparkRef.setValue(true).addOnSuccessListener {
+        otoparkRef.setValue("dolu").addOnSuccessListener {
             Toast.makeText(this, "✅ Otopark yeri dolu olarak işaretlendi: $kat - $alan", Toast.LENGTH_SHORT).show()
         }.addOnFailureListener { e ->
             Toast.makeText(this, "❌ Otopark yeri işaretlenemedi: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -464,7 +521,9 @@ class AdminHomeActivity : AppCompatActivity() {
             .setPositiveButton("Kaydet") { _, _ ->
                 val email = inputEmail.text.toString().trim()
                 val password = inputPassword.text.toString().trim()
-                val plaka = inputPlaka.text.toString().trim()
+                val plakaRaw = inputPlaka.text.toString().trim()
+                val plaka = plakaRaw.replace("\\s".toRegex(), "").uppercase()
+
 
                 if (email.isEmpty() || password.isEmpty() || plaka.isEmpty()) {
                     Toast.makeText(this, "❌ Tüm alanları doldurun!", Toast.LENGTH_SHORT).show()
@@ -506,4 +565,355 @@ class AdminHomeActivity : AppCompatActivity() {
             .create()
             .show()
     }
+    private fun showKullanicilarDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_kullanicilar, null)
+        val listView = dialogView.findViewById<ListView>(R.id.listViewKullanicilar)
+        val buttonKayitli = dialogView.findViewById<Button>(R.id.buttonKayitli)
+        val buttonAnonim = dialogView.findViewById<Button>(R.id.buttonAnonim)
+
+        val userList = mutableListOf<Pair<String, String>>() // (görünen metin, UID)
+
+        // Artık silme yok → sadece listeleme adapter'ı
+        val adapter = UserListAdapter(this, userList)
+
+        listView.adapter = adapter
+
+        val db = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+        val kullanicilarRef = db.getReference("kullanicilar")
+        val anonimRef = db.getReference("anonimKullanicilar")
+
+        buttonKayitli.setOnClickListener {
+            userList.clear()
+            kullanicilarRef.get().addOnSuccessListener { snapshot ->
+                snapshot.children.forEach { userSnap ->
+                    val email = userSnap.child("email").getValue(String::class.java)
+                        ?: userSnap.child("eposta").getValue(String::class.java)
+                        ?: "?"
+
+                    val plakalar = if (userSnap.hasChild("plakalar")) {
+                        userSnap.child("plakalar").children.map { it.key ?: "" }
+                            .joinToString(", ")
+                    } else if (userSnap.hasChild("plaka")) {
+                        userSnap.child("plaka").getValue(String::class.java) ?: "Plaka yok"
+                    } else {
+                        "Plaka yok"
+                    }
+
+                    userList.add(Pair("📧 $email\n🚗 $plakalar", userSnap.key ?: ""))
+                }
+                adapter.notifyDataSetChanged()
+            }
+        }
+
+        buttonAnonim.setOnClickListener {
+            userList.clear()
+            anonimRef.get().addOnSuccessListener { anonSnapshot ->
+                anonSnapshot.children.forEach { anonSnap ->
+                    val plaka = anonSnap.child("plaka").getValue(String::class.java) ?: "?"
+                    userList.add(Pair("🕶️ Anonim Kullanıcı\n🚗 $plaka", anonSnap.key ?: ""))
+                }
+                adapter.notifyDataSetChanged()
+            }
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Kullanıcılar")
+            .setView(dialogView)
+            .setNegativeButton("Kapat", null)
+            .create()
+            .show()
+    }
+    private fun showInfoKartDuzenleDialog() {
+        val db =
+            FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+        val infoCardsRef = db.getReference("infoCards")
+        val otoparkRef = db.getReference("otopark_duzeni")
+
+        infoCardsRef.get().addOnSuccessListener { snapshot ->
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("İnfo Kartlar")
+
+            val layout = LinearLayout(this)
+            layout.orientation = LinearLayout.VERTICAL
+            val editableInputs =
+                mutableListOf<Pair<DataSnapshot, Spinner>>() // artık spinner tutulacak
+
+            // Önce doluluk oranını hesapla
+            otoparkRef.get().addOnSuccessListener { otoparkSnapshot ->
+                var toplamAlan = 0
+                var doluAlan = 0
+
+                otoparkSnapshot.children.forEach { katSnap ->
+                    katSnap.children.forEach { alanSnap ->
+                        toplamAlan++
+                        val durumStr = alanSnap.getValue(String::class.java) ?: "bos"
+                        if (durumStr == "dolu") doluAlan++
+                    }
+                }
+
+                val dolulukYuzdesi = if (toplamAlan > 0) (doluAlan * 100) / toplamAlan else 0
+                val otoparkDurumu = if (dolulukYuzdesi >= 95) "DOLU" else "BOŞ"
+
+                snapshot.children.forEachIndexed { index, cardSnap ->
+                    val title = cardSnap.child("title").getValue(String::class.java) ?: ""
+                    var description =
+                        cardSnap.child("description").getValue(String::class.java) ?: ""
+
+                    if (index == 0) { // Otopark Durumu
+                        description = otoparkDurumu
+                        cardSnap.ref.child("description").setValue(description)
+                    } else if (index == 1) { // Doluluk
+                        description = "%$dolulukYuzdesi"
+                        cardSnap.ref.child("description").setValue(description)
+                    } else if (index == 2 || index == 3) { // Kamera Durumu, Giriş/Çıkış → admin elle seçsin
+                        val options = listOf("Aktif", "Pasif")
+                        val spinner = Spinner(this)
+                        val spinnerAdapter =
+                            ArrayAdapter(this, android.R.layout.simple_spinner_item, options)
+                        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                        spinner.adapter = spinnerAdapter
+
+                        val selectedIndex = options.indexOf(description)
+                        if (selectedIndex >= 0) spinner.setSelection(selectedIndex)
+
+                        layout.addView(TextView(this).apply { text = "$title Durumu:" })
+                        layout.addView(spinner)
+
+                        editableInputs.add(Pair(cardSnap, spinner))
+                    }
+                }
+
+                builder.setView(layout)
+                builder.setPositiveButton("Kaydet") { _, _ ->
+                    editableInputs.forEach { (cardSnap, spinner) ->
+                        val selectedValue = spinner.selectedItem.toString()
+                        cardSnap.ref.child("description").setValue(selectedValue)
+                    }
+                    Toast.makeText(this, "✅ İnfo kartlar güncellendi!", Toast.LENGTH_SHORT).show()
+                }
+                builder.setNegativeButton("İptal", null)
+                builder.show()
+            }.addOnFailureListener {
+                Toast.makeText(
+                    this,
+                    "❌ Otopark verisi yüklenemedi: ${it.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }.addOnFailureListener {
+            Toast.makeText(this, "❌ İnfo kartlar yüklenemedi: ${it.message}", Toast.LENGTH_SHORT)
+                .show()
+        }
+    }
+
+    private fun showBildirimlerDialog() {
+        val database = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+        val bildirimRef = database.getReference("adminMessages/bildirimler")
+
+        val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        val scrollView = ScrollView(this)
+        val innerLayout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        scrollView.addView(innerLayout)
+
+        bildirimRef.get().addOnSuccessListener { snapshot ->
+            innerLayout.removeAllViews()
+
+            snapshot.children.forEach { child ->
+                val key = child.key
+                val bildirimObj = child.getValue(Bildirim::class.java)
+                val mesaj = bildirimObj?.mesaj ?: ""
+                val tip = bildirimObj?.tip ?: ""
+                val zaman = bildirimObj?.zaman ?: ""
+
+                val itemView = LayoutInflater.from(this).inflate(R.layout.item_bildirim, null)
+                val textView = itemView.findViewById<TextView>(R.id.textViewMesaj)
+                val editButton = itemView.findViewById<ImageButton>(R.id.buttonEdit)
+                val deleteButton = itemView.findViewById<ImageButton>(R.id.buttonDelete)
+
+                textView.text = "[$zaman] ($tip): $mesaj"
+
+                editButton.setOnClickListener {
+                    if (key != null && bildirimObj != null) {
+                        showEditBildirimDialog(key, bildirimObj)
+                    }
+                }
+
+                deleteButton.setOnClickListener {
+                    if (key != null) {
+                        bildirimRef.child(key).removeValue()
+                            .addOnSuccessListener {
+                                Toast.makeText(this@AdminHomeActivity, "Bildirim silindi", Toast.LENGTH_SHORT).show()
+                                showBildirimlerDialog()
+                            }
+                            .addOnFailureListener { e ->
+                                Toast.makeText(this@AdminHomeActivity, "Hata: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                    }
+                }
+
+                innerLayout.addView(itemView)
+            }
+
+            val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_bildirim_ekle, null)
+            val inputEditText = dialogView.findViewById<EditText>(R.id.inputEditText)
+            inputEditText.setRawInputType(InputType.TYPE_CLASS_TEXT)
+
+            val addButton = dialogView.findViewById<Button>(R.id.buttonEkle)
+
+            addButton.setOnClickListener {
+                val yeniMesaj = inputEditText.text.toString()
+                if (yeniMesaj.isNotEmpty()) {
+                    val yeniId = bildirimRef.push().key
+                    if (yeniId != null) {
+                        val yeniBildirim = Bildirim(
+                            mesaj = yeniMesaj,
+                            tip = "manual",
+                            zaman = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+                        )
+                        bildirimRef.child(yeniId).setValue(yeniBildirim)
+                            .addOnSuccessListener {
+                                Toast.makeText(this@AdminHomeActivity, "Bildirim eklendi", Toast.LENGTH_SHORT).show()
+                                inputEditText.text.clear()
+                                showBildirimlerDialog()
+                            }
+                            .addOnFailureListener { e ->
+                                Toast.makeText(this@AdminHomeActivity, "Hata: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                    }
+                }
+            }
+
+            layout.addView(scrollView)
+            layout.addView(dialogView)
+
+            AlertDialog.Builder(this)
+                .setTitle("Uygulama Bildirimleri")
+                .setView(layout)
+                .setNegativeButton("Kapat", null)
+                .show()
+        }.addOnFailureListener { e ->
+            Toast.makeText(this, "Hata: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showEditBildirimDialog(key: String, mevcutBildirim: Bildirim) {
+        val inputEditText = EditText(this).apply { setText(mevcutBildirim.mesaj) }
+
+        AlertDialog.Builder(this)
+            .setTitle("Bildirim Düzenle")
+            .setView(inputEditText)
+            .setPositiveButton("Kaydet") { _, _ ->
+                val guncelMesaj = inputEditText.text.toString()
+                if (guncelMesaj.isNotEmpty()) {
+                    val database = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+                    val bildirimRef = database.getReference("adminMessages/bildirimler")
+
+                    val guncelBildirim = mevcutBildirim.copy(mesaj = guncelMesaj)
+
+                    bildirimRef.child(key).setValue(guncelBildirim)
+                        .addOnSuccessListener {
+                            Toast.makeText(this, "Bildirim güncellendi", Toast.LENGTH_SHORT).show()
+                            showBildirimlerDialog()
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(this, "Hata: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            }
+            .setNegativeButton("İptal", null)
+            .show()
+    }
+    private fun showChatbotMessagesDialog() {
+        val database = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+        val messagesRef = database.getReference("adminMessages/messages")
+
+        messagesRef.get().addOnSuccessListener { snapshot ->
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Chatbot Mesajlar")
+
+            val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+
+            snapshot.children.forEach { child ->
+                val messageObj = child.getValue(AdminChatMessage::class.java)
+                val plaka = messageObj?.plaka ?: "Bilinmiyor"
+                val mesaj = messageObj?.message ?: "Mesaj yok"
+                val cevap = messageObj?.cevap ?: ""
+
+                val itemLayout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+                itemLayout.setPadding(0, 10, 0, 10)
+
+                val plakaView = TextView(this).apply {
+                    text = "🚗 $plaka"
+                    textSize = 16f
+                    setPadding(0, 0, 0, 5)
+                }
+
+                val mesajView = TextView(this).apply {
+                    text = "💬 Mesaj: $mesaj"
+                }
+
+                val cevapView = TextView(this).apply {
+                    text = if (cevap.isNotEmpty()) "✅ Cevap: $cevap" else "❌ Henüz cevaplanmadı"
+                }
+
+                val cevaplaButton = Button(this).apply {
+                    text = "Cevapla"
+                    setOnClickListener {
+                        showCevaplaDialog(child.key ?: "", messageObj)
+                    }
+                }
+
+                itemLayout.addView(plakaView)
+                itemLayout.addView(mesajView)
+                itemLayout.addView(cevapView)
+                itemLayout.addView(cevaplaButton)
+
+                layout.addView(itemLayout)
+            }
+
+            builder.setView(ScrollView(this).apply { addView(layout) })
+            builder.setNegativeButton("Kapat", null)
+            builder.show()
+        }.addOnFailureListener { e ->
+            Toast.makeText(this, "❌ Mesajlar yüklenemedi: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+    private fun showCevaplaDialog(messageId: String, mevcutMesaj: AdminChatMessage?) {
+        val inputEditText = EditText(this).apply {
+            hint = "Cevabınızı girin"
+            setText(mevcutMesaj?.cevap ?: "")
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Cevapla")
+            .setView(inputEditText)
+            .setPositiveButton("Kaydet") { _, _ ->
+                val cevapText = inputEditText.text.toString()
+                if (cevapText.isNotEmpty()) {
+                    val database = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+                    val messagesRef = database.getReference("adminMessages/messages").child(messageId)
+                    messagesRef.child("cevap").setValue(cevapText)
+                        .addOnSuccessListener {
+                            Toast.makeText(this, "✅ Cevap kaydedildi", Toast.LENGTH_SHORT).show()
+                            showChatbotMessagesDialog()
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(this, "❌ Cevap kaydedilemedi: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            }
+            .setNegativeButton("İptal", null)
+            .show()
+    }
+
+
+
+
+
 }
+
+
+
+
+
+

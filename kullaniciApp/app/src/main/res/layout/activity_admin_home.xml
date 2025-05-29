@@ -36,6 +36,35 @@
         android:backgroundTint="#3B82F6"
         android:textColor="#FFFFFF"
         android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/buttonKullanicilar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="KULLANICILAR"
+        android:layout_marginTop="16dp" />
+
+    <Button
+        android:id="@+id/buttonInfoKartDuzenle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="İnfo Kart Düzenle"
+        android:layout_marginTop="16dp" />
+
+    <Button
+        android:id="@+id/buttonYeniBildirim"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="UYGULAMA BİLDİRİMLERİ YÖNET"
+        android:layout_marginTop="16dp" />
+    <Button
+        android:id="@+id/buttonChatbotMesajlar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Chatbot Mesajlar" />
+
+
+
     <!-- ÇIKIŞ YAPAN PLAKALAR -->
     <Button
         android:id="@+id/buttonCikisListesi"

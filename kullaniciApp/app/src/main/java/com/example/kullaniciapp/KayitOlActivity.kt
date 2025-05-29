@@ -54,15 +54,10 @@ class KayitOlActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Türk plakası regex: 2 rakam + 1-3 harf + 2-4 rakam
             val turkPlakaRegex = Regex("^[0-9]{2}[A-Z]{1,3}[0-9]{2,4}$")
             val yabanciPlakaRegex = Regex("^[A-Z0-9]{5,10}$")
 
-            if (turkPlakaRegex.matches(plaka)) {
-                // Türk plakası → geçerli
-            } else if (yabanciPlakaRegex.matches(plaka)) {
-                // Yabancı plakası → geçerli
-            } else {
+            if (!turkPlakaRegex.matches(plaka) && !yabanciPlakaRegex.matches(plaka)) {
                 Toast.makeText(
                     this,
                     "❗ Geçerli bir Türk veya yabancı plaka girin",
@@ -77,9 +72,18 @@ class KayitOlActivity : AppCompatActivity() {
                 var plakaVar = false
 
                 snapshot.children.forEach { userSnapshot ->
+                    // 1️⃣ Üst plaka alanında kontrol
                     val existingPlaka = userSnapshot.child("plaka").getValue(String::class.java)
                     if (existingPlaka == plaka) {
                         plakaVar = true
+                    }
+
+                    // 2️⃣ plakalar altında kontrol
+                    val plakalarSnapshot = userSnapshot.child("plakalar")
+                    plakalarSnapshot.children.forEach { plakaSnap ->
+                        if (plakaSnap.key == plaka) {
+                            plakaVar = true
+                        }
                     }
                 }
 
@@ -90,12 +94,27 @@ class KayitOlActivity : AppCompatActivity() {
                         .addOnSuccessListener { result ->
                             val uid = result.user?.uid
                             if (uid != null) {
+                                // Artık sadece plakalar altına yazıyoruz
                                 val userMap = mapOf(
                                     "eposta" to email,
-                                    "plaka" to plaka,
-                                    "giris_saati" to "",
-                                    "toplam_ucret" to "0₺"
+                                    "plakalar" to mapOf(
+                                        plaka to mapOf(
+                                            "marka" to "",
+                                            "model" to "",
+                                            "sigorta" to "",
+                                            "ruhsat" to "",
+                                            "kasko" to "",
+                                            "giris_tarihi" to "",
+                                            "giris_saati" to "",
+                                            "cikis_tarihi" to "",
+                                            "cikis_saati" to "",
+                                            "kat" to "",
+                                            "alan" to ""
+                                        )
+                                    ),
+                                    "toplam_ucret" to ""
                                 )
+
                                 usersRef.child(uid).setValue(userMap)
                                     .addOnSuccessListener {
                                         Toast.makeText(
@@ -128,6 +147,7 @@ class KayitOlActivity : AppCompatActivity() {
                     .show()
             }
         }
+
 
     }
 }

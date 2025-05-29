@@ -2,14 +2,12 @@ package com.example.kullaniciapp
 
 import android.app.AlertDialog
 import android.os.Bundle
-import android.util.Log
-import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 
 class ChatbotFragment : Fragment() {
 
@@ -22,10 +20,14 @@ class ChatbotFragment : Fragment() {
 
     private var adminMessageMode = false
 
+    private val databaseUrl = "https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/"
+    private val database = FirebaseDatabase.getInstance(databaseUrl)
+
+
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: android.view.LayoutInflater, container: android.view.ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): android.view.View? {
         val view = inflater.inflate(R.layout.fragment_chatbot, container, false)
 
         recyclerView = view.findViewById(R.id.chatRecyclerView)
@@ -37,58 +39,83 @@ class ChatbotFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
 
+
         if (messages.isEmpty()) {
-            val starterMessages = listOf(
-                ChatMessage("Merhaba! Ne öğrenmek istersiniz?", isUser = false),
-                ChatMessage("Plakam ne?", isUser = false, isOption = true),
-                ChatMessage("Giriş saatim?", isUser = false, isOption = true),
-                ChatMessage("Park yerim?", isUser = false, isOption = true),
-                ChatMessage("Ücret ne kadar?", isUser = false, isOption = true),
-                ChatMessage("Geçmiş ödeme?", isUser = false, isOption = true),
-                ChatMessage("Admin'e sor", isUser = false, isOption = true)
-            )
-            messages.addAll(starterMessages)
-            adapter.notifyDataSetChanged()
+            addStarterMessages()
         }
 
         adapter.clickListener = { selectedText ->
-            if (selectedText == "Admin'e sor") {
-                adminMessageMode = true
-                showAdminMessageDialog()
-            } else {
-                addMessage(selectedText, isUser = true)
-                saveMessageToFirebase(selectedText, isUser = true)
-                getBotResponse(selectedText)
+            when (selectedText) {
+                "Admin'e sor" -> {
+                    adminMessageMode = true
+                    showAdminMessageDialog()
+                }
+                "Yeni bir sorunuz var mı?" -> {
+                    // Bu sadece soru mesajı, kullanıcı cevaplayamaz, boş bırakabiliriz
+                }
+                "Evet" -> {
+                    // Admin'e sor seçeneğini göster
+                    val adminOption = ChatMessage("Admin'e sor", isUser = false, isOption = true)
+                    messages.add(adminOption)
+                    adapter.notifyItemInserted(messages.size - 1)
+                    recyclerView.scrollToPosition(messages.size - 1)
+                }
+                "Hayır" -> {
+                    // Chatbotu starter mesajlara döndür
+                    messages.clear()
+                    addStarterMessages()
+                }
+                else -> {
+                    addMessage(selectedText, isUser = true)
+                    getBotResponse(selectedText)
+                }
             }
         }
+
 
         buttonSend.setOnClickListener {
             val userMessage = editTextMessage.text.toString().trim()
             if (userMessage.isNotEmpty()) {
                 addMessage(userMessage, isUser = true)
-                saveMessageToFirebase(userMessage, isUser = true)
                 editTextMessage.setText("")
                 getBotResponse(userMessage)
             }
         }
 
         menuButton.setOnClickListener {
-            AlertDialog.Builder(requireContext())
-                .setTitle("Sohbeti Temizle")
-                .setMessage("Tüm sohbet geçmişinizi silmek istiyor musunuz?")
-                .setPositiveButton("Evet") { _, _ -> clearChatHistory() }
-                .setNegativeButton("Hayır", null)
-                .show()
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+            if (uid == null) {
+                Toast.makeText(requireContext(), "Kullanıcı oturumu bulunamadı.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            checkPendingAdminReply(uid) { hasPending ->
+                if (hasPending) {
+                    Toast.makeText(requireContext(),
+                        "Admin cevabı gelmeden sohbet temizlenemez.", Toast.LENGTH_LONG).show()
+                } else {
+                    clearChatHistory(uid)
+                }
+            }
         }
 
-        loadMessagesFromFirebase()
-
-        // Test düğümü (geliştirme kontrolü için)
-        val testRef = FirebaseDatabase.getInstance().getReference("testNode")
-        val testData = mapOf("check" to "hello test")
-        testRef.push().setValue(testData)
+        loadMessagesFromAdminMessages()
+        listenForAdminRepliesRealtime()
 
         return view
+    }
+
+    private fun addStarterMessages() {
+        val starterMessages = listOf(
+            ChatMessage("Merhaba! Ne öğrenmek istersiniz?", isUser = false),
+            ChatMessage("Plakam ne?", isUser = false, isOption = true),
+            ChatMessage("Giriş saatim?", isUser = false, isOption = true),
+            ChatMessage("Park yerim?", isUser = false, isOption = true),
+            ChatMessage("Ücret ne kadar?", isUser = false, isOption = true),
+            ChatMessage("Geçmiş ödeme?", isUser = false, isOption = true),
+            ChatMessage("Admin'e sor", isUser = false, isOption = true)
+        )
+        messages.addAll(starterMessages)
+        adapter.notifyDataSetChanged()
     }
 
     private fun addMessage(text: String, isUser: Boolean) {
@@ -102,7 +129,6 @@ class ChatbotFragment : Fragment() {
 
         ChatBot.getResponse(userText, uid) { botReply ->
             addMessage(botReply, isUser = false)
-            saveMessageToFirebase(botReply, isUser = false)
             if (!adminMessageMode) addBotOptionsAgain()
         }
     }
@@ -135,15 +161,35 @@ class ChatbotFragment : Fragment() {
             .setPositiveButton("Gönder") { dialog, _ ->
                 val messageToAdmin = input.text.toString().trim()
                 if (messageToAdmin.isNotEmpty()) {
-                    sendMessageToAdmin(messageToAdmin)
-                    addMessage("Admin'e mesajınız iletildi: \"$messageToAdmin\"", isUser = false)
-                    saveMessageToFirebase("Admin'e mesajınız iletildi: \"$messageToAdmin\"", isUser = false)
+                    val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@setPositiveButton
+                    archiveAdminMessages(uid, {
+                        sendMessageToAdmin(messageToAdmin)
+                        addMessage("Admin'e mesajınız iletildi: \"$messageToAdmin\"", isUser = false)
+                    }, { error ->
+                        Toast.makeText(requireContext(), "Mesaj arşivleme hatası: ${error.message}", Toast.LENGTH_LONG).show()
+                    })
                 }
                 dialog.dismiss()
             }
             .setNegativeButton("İptal") { dialog, _ -> dialog.cancel() }
             .show()
     }
+
+    private fun saveUserMessageToAdminMessages(message: String) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val timestamp = System.currentTimeMillis()
+
+        val data = mapOf(
+            "userId" to uid,
+            "message" to message,
+            "isUser" to true,
+            "timestamp" to timestamp
+        )
+        val adminMessagesRef = database.getReference("adminMessages/messages")
+        adminMessagesRef.push().setValue(data)
+    }
+
+
 
     private fun sendMessageToAdmin(message: String) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: "testUser"
@@ -152,86 +198,148 @@ class ChatbotFragment : Fragment() {
         val data = mapOf(
             "userId" to uid,
             "message" to message,
-            "timestamp" to timestamp
+            "timestamp" to timestamp,
+            "isUser" to true
         )
 
-        val database = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
-        val adminRef = database.getReference("adminMessages/messages")
-        val userRef = database.getReference("userChats").child(uid)
-
-        // Admin verisi kaydedilsin
-        adminRef.push().setValue(data)
-        // Kullanıcı geçmişine de aynı mesaj isUser: false ile yazılsın
-        val userMessage = mapOf(
-            "message" to message,
-            "isUser" to false,
-            "timestamp" to timestamp
-        )
-        userRef.push().setValue(userMessage)
+        val adminMessagesRef = database.getReference("adminMessages/messages")
+        adminMessagesRef.push().setValue(data)
     }
 
-    private fun saveMessageToFirebase(message: String, isUser: Boolean) {
+    private fun loadMessagesFromAdminMessages() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val timestamp = System.currentTimeMillis()
+        val adminMessagesRef = database.getReference("adminMessages/messages")
 
-        val messageData = mapOf(
-            "message" to message,
-            "isUser" to isUser,
-            "timestamp" to timestamp
-        )
-
-        val database = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
-        val ref = database.getReference("userChats").child(uid)
-
-        ref.push()
-            .setValue(messageData)
-    }
-
-
-    private fun loadMessagesFromFirebase() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val database = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
-        val ref = database.getReference("userChats").child(uid)
-
-        ref.get().addOnSuccessListener { snapshot ->
+        adminMessagesRef.orderByChild("userId").equalTo(uid).get().addOnSuccessListener { snapshot ->
             messages.clear()
-            snapshot.children.forEach { child ->
-                val message = child.child("message").getValue(String::class.java) ?: return@forEach
-                val isUser = child.child("isUser").getValue(Boolean::class.java) ?: false
-                messages.add(ChatMessage(message, isUser))
-            }
+            snapshot.children.sortedBy { it.child("timestamp").getValue(Long::class.java) ?: 0L }
+                .forEach { child ->
+                    val message = child.child("message").getValue(String::class.java) ?: return@forEach
+                    val isUser = child.child("isUser").getValue(Boolean::class.java) ?: false
+                    messages.add(ChatMessage(message, isUser))
+                }
             adapter.notifyDataSetChanged()
             recyclerView.scrollToPosition(messages.size - 1)
         }
     }
 
-
-    private fun clearChatHistory() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: "testUser"
-        val database = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
-        val userRef = database.getReference("userChats").child(uid)
-
-        userRef.removeValue()
-            .addOnSuccessListener {
+    private fun clearChatHistory(uid: String) {
+        val adminMessagesRef = database.getReference("adminMessages/messages")
+        adminMessagesRef.orderByChild("userId").equalTo(uid).get().addOnSuccessListener { snapshot ->
+            archiveAdminMessages(uid, {
+                snapshot.children.forEach { it.ref.removeValue() }
                 messages.clear()
-                adapter.notifyDataSetChanged()
+                addStarterMessages()
                 Toast.makeText(requireContext(), "Sohbet geçmişi temizlendi.", Toast.LENGTH_SHORT).show()
+            }, { error ->
+                Toast.makeText(requireContext(), "Arşivleme hatası: ${error.message}", Toast.LENGTH_LONG).show()
+            })
+        }
+    }
 
-                val starterMessages = listOf(
-                    ChatMessage("Merhaba! Ne öğrenmek istersiniz?", isUser = false),
-                    ChatMessage("Plakam ne?", isUser = false, isOption = true),
-                    ChatMessage("Giriş saatim?", isUser = false, isOption = true),
-                    ChatMessage("Park yerim?", isUser = false, isOption = true),
-                    ChatMessage("Ücret ne kadar?", isUser = false, isOption = true),
-                    ChatMessage("Geçmiş ödeme?", isUser = false, isOption = true),
-                    ChatMessage("Admin'e sor", isUser = false, isOption = true)
+    private fun checkPendingAdminReply(uid: String, callback: (Boolean) -> Unit) {
+        val adminMessagesRef = database.getReference("adminMessages/messages")
+        adminMessagesRef.orderByChild("userId").equalTo(uid).get()
+            .addOnSuccessListener { snapshot ->
+                val pending = snapshot.children.any {
+                    it.child("isUser").getValue(Boolean::class.java) == true && it.child("cevap").getValue(String::class.java).isNullOrBlank()
+                }
+                callback(pending)
+            }
+            .addOnFailureListener {
+                callback(false)
+            }
+    }
+
+    private fun archiveAdminMessages(uid: String, onSuccess: () -> Unit, onError: (Exception) -> Unit) {
+        val adminMessagesRef = database.getReference("adminMessages/messages")
+        val archiveRef = database.getReference("adminMessages/gecmisMesajlar").child(uid).push()
+
+        adminMessagesRef.orderByChild("userId").equalTo(uid).get()
+            .addOnSuccessListener { snapshot ->
+                val messagesMap = mutableMapOf<String, Any>()
+                snapshot.children.forEach { child ->
+                    child.key?.let { key ->
+                        messagesMap[key] = child.value ?: ""
+                    }
+                }
+                val archiveData = mapOf(
+                    "timestamp" to System.currentTimeMillis(),
+                    "messages" to messagesMap
                 )
-                messages.addAll(starterMessages)
-                adapter.notifyDataSetChanged()
+                archiveRef.setValue(archiveData)
+                    .addOnSuccessListener {
+                        onSuccess()
+                    }
+                    .addOnFailureListener { onError(it) }
             }
-            .addOnFailureListener { e ->
-                Toast.makeText(requireContext(), "Temizleme hatası: ${e.message}", Toast.LENGTH_SHORT).show()
+            .addOnFailureListener { onError(it) }
+    }
+
+    private fun listenForAdminRepliesRealtime() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val adminMessagesRef = database.getReference("adminMessages/messages")
+        adminMessagesRef.addChildEventListener(object : ChildEventListener {
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                val userId = snapshot.child("userId").getValue(String::class.java)
+                val adminReply = snapshot.child("cevap").getValue(String::class.java)
+                if (userId == uid && !adminReply.isNullOrBlank()) {
+                    val replyMessage = "Admin cevabı: $adminReply"
+                    if (!messages.any { it.message == replyMessage }) {
+                        addMessage(replyMessage, isUser = false)
+                        showNewQuestionPrompt()
+                    }
+                }
             }
+
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                val userId = snapshot.child("userId").getValue(String::class.java)
+                val adminReply = snapshot.child("cevap").getValue(String::class.java)
+                if (userId == uid && !adminReply.isNullOrBlank()) {
+                    val replyMessage = "Admin cevabı: $adminReply"
+                    val index = messages.indexOfFirst { it.message.startsWith("Admin cevabı:") }
+                    if (index != -1) {
+                        messages[index] = ChatMessage(replyMessage, isUser = false)
+                        adapter.notifyItemChanged(index)
+                    } else {
+                        addMessage(replyMessage, isUser = false)
+                    }
+                    showNewQuestionPrompt()
+                }
+            }
+
+            override fun onChildRemoved(snapshot: DataSnapshot) {
+                val userId = snapshot.child("userId").getValue(String::class.java)
+                val adminReply = snapshot.child("cevap").getValue(String::class.java)
+                if (userId == uid && !adminReply.isNullOrBlank()) {
+                    val replyMessage = "Admin cevabı: $adminReply"
+                    val index = messages.indexOfFirst { it.message == replyMessage }
+                    if (index != -1) {
+                        messages.removeAt(index)
+                        adapter.notifyItemRemoved(index)
+                    }
+                }
+            }
+
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onCancelled(error: DatabaseError) {}
+        })
+    }
+
+    private fun showNewQuestionPrompt() {
+        // Önce "Yeni bir sorunuz var mı?" sorusunu ekle
+        val prompt = ChatMessage("Yeni bir sorunuz var mı?", isUser = false, isOption = false)
+        messages.add(prompt)
+        adapter.notifyItemInserted(messages.size - 1)
+
+        // Sonra "Evet" ve "Hayır" seçeneklerini ekle
+        val yesOption = ChatMessage("Evet", isUser = false, isOption = true)
+        val noOption = ChatMessage("Hayır", isUser = false, isOption = true)
+        messages.add(yesOption)
+        messages.add(noOption)
+        adapter.notifyItemRangeInserted(messages.size - 2, 2)
+
+        recyclerView.scrollToPosition(messages.size - 1)
     }
 
 }
