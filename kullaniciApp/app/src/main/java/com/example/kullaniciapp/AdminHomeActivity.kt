@@ -65,6 +65,31 @@ class AdminHomeActivity : AppCompatActivity() {
         buttonChatbotMesajlar.setOnClickListener {
             showChatbotMessagesDialog()
         }
+        val buttonUyariliPlakalar = findViewById<Button>(R.id.buttonUyariliPlakalar)
+        buttonUyariliPlakalar.setOnClickListener {
+            buttonUyariliPlakalar.setOnClickListener {
+                val database = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+                val uyariliRef = database.getReference("uyarili_plakalar")
+                uyariliRef.get().addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        val plakalarListesi = StringBuilder()
+                        snapshot.children.forEach { plakaSnap ->
+                            plakalarListesi.append(plakaSnap.key).append("\n")
+                        }
+
+                        AlertDialog.Builder(this)
+                            .setTitle("Uyarılı Plakalar")
+                            .setMessage(plakalarListesi.toString())
+                            .setPositiveButton("Tamam", null)
+                            .show()
+                    } else {
+                        Toast.makeText(this, "Uyarılı plaka bulunamadı.", Toast.LENGTH_SHORT).show()
+                    }
+                }.addOnFailureListener {
+                    Toast.makeText(this, "Veri alınamadı: ${it.message}", Toast.LENGTH_SHORT).show()
+                }
+            }        }
+
 
 
 
@@ -120,17 +145,28 @@ class AdminHomeActivity : AppCompatActivity() {
             val girilenPlakaRaw = editTextSearchPlaka.text.toString().trim()
             val girilenPlaka = girilenPlakaRaw.replace("\\s".toRegex(), "").uppercase()
 
-
             val turkPlakaRegex = Regex("^[0-9]{2}[A-Z]{1,3}[0-9]{2,4}$")
-                val yabanciPlakaRegex = Regex("^[A-Z0-9]{5,10}$")
+            val yabanciPlakaRegex = Regex("^[A-Z0-9]{5,10}$")
 
+            if (!turkPlakaRegex.matches(girilenPlaka) && !yabanciPlakaRegex.matches(girilenPlaka)) {
+                Toast.makeText(this, "❗ Geçerli bir Türk veya yabancı plaka girin!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-                if (!turkPlakaRegex.matches(girilenPlaka) && !yabanciPlakaRegex.matches(girilenPlaka)) {
-                    Toast.makeText(this, "❗ Geçerli bir Türk veya yabancı plaka girin!", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
+            // 🛑 EKLENDİ: Uyarılı plaka kontrolü
+            val uyariliRef = db.getReference("uyarili_plakalar")
+            uyariliRef.child(girilenPlaka).get().addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    AlertDialog.Builder(this)
+                        .setTitle("UYARI!")
+                        .setMessage("⚠️ Bu plaka uyarılı veya arananlar listesinde: $girilenPlaka")
+                        .setPositiveButton("Tamam", null)
+                        .show()
                 }
-                else if (plakaList.contains(girilenPlaka)) {
-                    showEditPlakaDialog(girilenPlaka)
+            }
+
+            if (plakaList.contains(girilenPlaka)) {
+                showEditPlakaDialog(girilenPlaka)
             } else {
                 AlertDialog.Builder(this)
                     .setTitle("Plaka bulunamadı")
@@ -156,8 +192,8 @@ class AdminHomeActivity : AppCompatActivity() {
                     .setNegativeButton("Hayır", null)
                     .show()
             }
-
         }
+
 
         AlertDialog.Builder(this)
             .setTitle("Tüm Plakalar")
@@ -905,6 +941,10 @@ class AdminHomeActivity : AppCompatActivity() {
             .setNegativeButton("İptal", null)
             .show()
     }
+
+
+
+
 
 
 

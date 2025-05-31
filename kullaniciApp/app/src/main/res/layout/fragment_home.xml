@@ -118,7 +118,7 @@
                 android:id="@+id/textTarife"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tarife bilgisi"
+                android:text="Tarife: İlk 30 dk ücretsiz, her ek saat 10₺, maksimum günlük 100₺"
                 android:textSize="14sp"
                 android:layout_marginBottom="8dp" />
 
@@ -129,7 +129,7 @@
                 android:text="ŞİMDİ ÖDE" />
         </LinearLayout>
 
-        <!-- 📆 Rezervasyon -->
+        <!-- 📆 Rezervasyon Kartı (güncellenmiş) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -139,19 +139,67 @@
             android:elevation="2dp"
             android:layout_marginBottom="16dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Rezervasyon"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/textRezervasyonTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Rezervasyon"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true" />
+
+                <ImageView
+                    android:id="@+id/iconRezervasyonInfo"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_info"
+                    android:contentDescription="Rezervasyon bilgi ikonu"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:padding="4dp" />
+            </RelativeLayout>
 
             <Button
                 android:id="@+id/buttonRezervasyon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="REZERVASYON OLUŞTUR" />
+                android:text="REZERVASYON OLUŞTUR"
+                android:layout_marginTop="8dp" />
+        </LinearLayout>
+
+        <!-- 📋 Aktif Rezervasyon Bilgi Kartı -->
+        <LinearLayout
+            android:id="@+id/layoutRezervasyonBilgi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFF3E0"
+            android:padding="12dp"
+            android:elevation="2dp"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/textRezervasyonBilgi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Aktif rezervasyon bilgisi burada gösterilecek."
+                android:textSize="15sp"
+                android:textColor="#000"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/buttonRezervasyonIptal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="REZERVASYONU İPTAL ET"
+                android:backgroundTint="@color/design_default_color_error"
+                android:textColor="@android:color/white" />
         </LinearLayout>
 
         <!-- 💳 Geçmiş Ödeme -->
@@ -162,5 +210,7 @@
             android:text="Geçmiş Ödeme:"
             android:textSize="14sp"
             android:layout_marginBottom="16dp" />
+
+
     </LinearLayout>
 </ScrollView>
