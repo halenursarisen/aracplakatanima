@@ -170,21 +170,47 @@ class HomeFragment : Fragment() {
 
                 view.findViewById<Button>(R.id.buttonOde).setOnClickListener {
                     val toplamUcret = view.findViewById<TextView>(R.id.textUcret).text.toString()
+                    val kullaniciRef = db.getReference("kullanicilar").child(uid!!)
+                    val cikisYapanRef = db.getReference("cikisYapanKullanicilar").child(uid)
 
-                    // Sadece ödenen parayı kaydet
-                    val gecmisOdemeRef = db.getReference("kullanicilar").child(uid!!).child("gecmisOdeme")
-                    gecmisOdemeRef.setValue(toplamUcret).addOnSuccessListener {
-                        Toast.makeText(requireContext(), "✅ Ödeme kaydedildi: $toplamUcret", Toast.LENGTH_LONG).show()
+                    kullaniciRef.get().addOnSuccessListener { userSnapshot ->
+                        val userData = userSnapshot.value
 
-                        // Aktif ücreti sıfırla
-                        view.findViewById<TextView>(R.id.textUcret).text = "0₺"
+                        if (userData != null) {
+                            // ✅ Çıkış yapanlara TAM kullanıcı verisini kaydet
+                            cikisYapanRef.setValue(userData).addOnSuccessListener {
+                                cikisYapanRef.child("gecmisOdeme").setValue(toplamUcret)
 
-                        // Ekrandaki Geçmiş Ödeme alanını güncelle
-                        view.findViewById<TextView>(R.id.textGecmisOdeme).text = "Geçmiş Ödeme: $toplamUcret"
-                    }.addOnFailureListener {
-                        Toast.makeText(requireContext(), "❌ Ödeme kaydedilemedi: ${it.message}", Toast.LENGTH_LONG).show()
+                                // ✅ plakalar altındaki her plaka için alt alanları sıfırla
+                                val plakalarNode = userSnapshot.child("plakalar")
+                                for (plakaSnap in plakalarNode.children) {
+                                    val plakaKey = plakaSnap.key ?: continue
+                                    val plakaRef = kullaniciRef.child("plakalar").child(plakaKey)
+
+                                    plakaRef.child("giris_tarihi").setValue("")
+                                    plakaRef.child("giris_saati").setValue("")
+                                    plakaRef.child("cikis_tarihi").setValue("")
+                                    plakaRef.child("cikis_saati").setValue("")
+                                    plakaRef.child("alan").setValue("")
+                                    plakaRef.child("kat").setValue("")
+                                }
+
+                                // ✅ Ekrandaki değerleri sıfırla
+                                view.findViewById<TextView>(R.id.textUcret)?.text = "0₺"
+                                view.findViewById<TextView>(R.id.textGecenSure)?.text = "Geçen Süre: 0 saat 0 dakika 0 saniye"
+                                view.findViewById<TextView>(R.id.textGirisTarihi)?.text = "Giriş Tarihi: "
+                                view.findViewById<TextView>(R.id.textGirisSaati)?.text = "Giriş Saati: "
+                                view.findViewById<TextView>(R.id.textParkAlani)?.text = "Park Alanı: "
+
+
+                                Toast.makeText(requireContext(), "✅ Ödeme kaydedildi, plakaların alt verileri sıfırlandı.", Toast.LENGTH_LONG).show()
+                            }.addOnFailureListener {
+                                Toast.makeText(requireContext(), "❌ Çıkış yapanlara kayıt başarısız: ${it.message}", Toast.LENGTH_LONG).show()
+                            }
+                        }
                     }
                 }
+
 
 
             }

@@ -24,6 +24,7 @@
             android:padding="8dp"
             android:gravity="center"
             android:layout_marginBottom="12dp" />
+
         <!-- ⏱ Geçen Süre -->
         <TextView
             android:id="@+id/textGecenSure"
@@ -61,9 +62,7 @@
             app:dotsColor="#BDBDBD"
             app:selectedDotColor="#1976D2" />
 
-
-
-        <!-- 🚗 Plaka Kartı -->
+        <!-- 🚗 Plaka Bilgi Kartı -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -81,6 +80,13 @@
                 android:textSize="16sp" />
 
             <TextView
+                android:id="@+id/textGirisTarihi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Giriş Tarihi: -"
+                android:textSize="16sp" />
+
+            <TextView
                 android:id="@+id/textGirisSaati"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -88,10 +94,17 @@
                 android:textSize="16sp" />
 
             <TextView
-                android:id="@+id/textParkAlani"
+                android:id="@+id/textKat"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Park Alanı: -"
+                android:text="Kat: -"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/textAlan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Alan: -"
                 android:textSize="16sp" />
         </LinearLayout>
 
@@ -128,8 +141,6 @@
                 android:text="ŞİMDİ ÖDE" />
         </LinearLayout>
 
-
-
         <!-- 🔑 Kayıt Ol Butonu -->
         <Button
             android:id="@+id/buttonKayitOl"
@@ -139,7 +150,6 @@
             android:backgroundTint="#10B981"
             android:textColor="#FFFFFF"
             android:layout_marginTop="8dp" />
-
 
         <!-- 🚪 Çıkış Yap Butonu -->
         <Button
