@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F9FAFB"
+    android:padding="24dp"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingTop="48dp">
+
+        <!-- Logo -->
+        <ImageView
+            android:id="@+id/logoImage"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_marginBottom="12dp"
+            android:src="@drawable/plaka_logo" />
+
+        <!-- Başlık -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kayıt Ol"
+            android:textColor="#111827"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="32dp" />
+
+        <!-- E-posta -->
+        <EditText
+            android:id="@+id/editTextEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="E-posta"
+            android:inputType="textEmailAddress"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#0C4A6E"
+            android:textColor="#111827" />
+
+        <!-- Plaka -->
+        <EditText
+            android:id="@+id/editTextPlaka"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Plaka (örn: 34ABC123)"
+            android:inputType="text"
+            android:maxLength="10"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#0C4A6E"
+            android:textColor="#111827" />
+
+        <!-- Şifre -->
+        <EditText
+            android:id="@+id/editTextPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Şifre (en az 6 karakter olmalı)"
+            android:inputType="textPassword"
+            android:layout_marginBottom="24dp"
+            android:backgroundTint="#0C4A6E"
+            android:textColor="#111827" />
+
+        <!-- Butonlar Yan Yana -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/buttonRegister"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Kayıt Ol"
+                android:backgroundTint="#0369A1"
+                android:textColor="#FFFFFF"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/buttonBack"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Geri Dön"
+                android:backgroundTint="#CCCCCC"
+                android:textColor="#000000"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- Uyarı Metni -->
+        <TextView
+            android:id="@+id/textWarning"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="❗ Kiralık Araçlar Lütfen 'Misafir Giriş' Kısmından giriniz"
+            android:textColor="#FF0000"
+            android:textSize="14sp"
+            android:textStyle="italic"
+            android:layout_marginTop="16dp"
+            android:layout_gravity="center_horizontal" />
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="6dp"
+    android:background="@drawable/bildirim_card_bg"
+    android:elevation="2dp">
+
+    <!-- Bildirim tipi ikonu -->
+    <ImageView
+        android:id="@+id/iconTip"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="12dp"
+        android:src="@drawable/ic_info"
+        android:tint="?attr/colorPrimary"
+        android:contentDescription="@string/bildirim_tipi_ikonu" />
+
+    <!-- Mesaj ve zaman -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textViewMesaj"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bildirim_mesaji"
+            android:textColor="?android:textColorPrimary"
+            android:textSize="14sp"
+            android:maxLines="3"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/textViewZaman"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bildirim_zamani"
+            android:textSize="12sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <!-- Düzenle butonu -->
+    <ImageButton
+        android:id="@+id/buttonEdit"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_edit"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/duzenle_butonu"
+        android:tint="@android:color/darker_gray" />
+
+    <!-- Sil butonu -->
+    <ImageButton
+        android:id="@+id/buttonDelete"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_delete_24"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/sil_butonu"
+        android:tint="@android:color/darker_gray" />
+</LinearLayout>
