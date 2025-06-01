@@ -13,6 +13,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 import android.os.LocaleList
 import android.text.InputType
+import android.util.Log
+
 
 
 class AdminHomeActivity : AppCompatActivity() {
@@ -88,10 +90,48 @@ class AdminHomeActivity : AppCompatActivity() {
                 }.addOnFailureListener {
                     Toast.makeText(this, "Veri alınamadı: ${it.message}", Toast.LENGTH_SHORT).show()
                 }
-            }        }
+            }
+        }
+        val buttonGecmisAbonelikler = findViewById<Button>(R.id.buttonGecmisAbonelikler)
+        buttonGecmisAbonelikler.setOnClickListener {
+            showGecmisAboneliklerDialog()
+        }
 
+        val buttonRezervasyonlar = findViewById<Button>(R.id.buttonRezervasyonlar)
+        buttonRezervasyonlar.setOnClickListener {
+            showRezervasyonlarDialog()
+        }
+        val buttonAktifAbonelikler = findViewById<Button>(R.id.buttonAktifAbonelikler)
+        buttonAktifAbonelikler.setOnClickListener {
+            val db = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+            val kullanicilarRef = db.getReference("kullanicilar")
 
+            kullanicilarRef.get().addOnSuccessListener { snapshot ->
+                val aktifList = StringBuilder()
+                snapshot.children.forEach { userSnap ->
+                    val abonelikDurumu = userSnap.child("abonelikDurumu").getValue(String::class.java) ?: "normal"
+                    if (abonelikDurumu == "abonelikli") {
+                        val email = userSnap.child("eposta").getValue(String::class.java) ?: "-"
+                        val abonelikUcreti = userSnap.child("abonelikUcreti").getValue(Int::class.java) ?: 0
 
+                        // Plaka listele
+                        val plakalarSnapshot = userSnap.child("plakalar")
+                        val plakalarList = plakalarSnapshot.children.mapNotNull { it.key }
+                        val plakalarStr = if (plakalarList.isNotEmpty()) plakalarList.joinToString(", ") else "Plaka yok"
+
+                        aktifList.append("📧 $email\n🚗 Plakalar: $plakalarStr\n💰 Ücret: $abonelikUcreti₺\n\n")
+                    }
+                }
+
+                AlertDialog.Builder(this)
+                    .setTitle("Aktif Abonelikler")
+                    .setMessage(if (aktifList.isNotEmpty()) aktifList.toString() else "Aktif abonelik bulunamadı.")
+                    .setPositiveButton("Tamam", null)
+                    .show()
+            }.addOnFailureListener {
+                Toast.makeText(this, "❌ Veri yüklenemedi: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
 
 
 
@@ -660,87 +700,92 @@ class AdminHomeActivity : AppCompatActivity() {
             .show()
     }
     private fun showInfoKartDuzenleDialog() {
-        val db =
-            FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+        val db = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
         val infoCardsRef = db.getReference("infoCards")
         val otoparkRef = db.getReference("otopark_duzeni")
 
-        infoCardsRef.get().addOnSuccessListener { snapshot ->
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("İnfo Kartlar")
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("İnfo Kartlar")
 
-            val layout = LinearLayout(this)
-            layout.orientation = LinearLayout.VERTICAL
-            val editableInputs =
-                mutableListOf<Pair<DataSnapshot, Spinner>>() // artık spinner tutulacak
+        val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        val editableInputs = mutableListOf<Pair<DatabaseReference, Spinner>>() // Spinner + referans tutar
 
-            // Önce doluluk oranını hesapla
-            otoparkRef.get().addOnSuccessListener { otoparkSnapshot ->
-                var toplamAlan = 0
-                var doluAlan = 0
+        otoparkRef.get().addOnSuccessListener { otoparkSnapshot ->
+            var toplamAlan = 0
+            var doluAlan = 0
 
-                otoparkSnapshot.children.forEach { katSnap ->
-                    katSnap.children.forEach { alanSnap ->
-                        toplamAlan++
-                        val durumStr = alanSnap.getValue(String::class.java) ?: "bos"
-                        if (durumStr == "dolu") doluAlan++
+            otoparkSnapshot.children.forEach { katSnap ->
+                katSnap.children.forEach { alanSnap ->
+                    toplamAlan++
+                    val durumStr = alanSnap.child("durum").getValue(String::class.java) ?: "bos"
+                    if (durumStr == "dolu" || durumStr == "rezerve") doluAlan++
+
+                }
+            }
+
+            val dolulukYuzdesi = if (toplamAlan > 0) (doluAlan * 100) / toplamAlan else 0
+            val otoparkDurumu = if (dolulukYuzdesi >= 95) "DOLU" else "BOŞ"
+
+            infoCardsRef.get().addOnSuccessListener { snapshot ->
+                snapshot.children.forEach { cardSnap ->
+                    val ref = cardSnap.ref
+                    val key = cardSnap.key ?: ""
+                    val title = cardSnap.child("title").getValue(String::class.java) ?: "Bilinmeyen"
+                    val description = cardSnap.child("description").getValue(String::class.java) ?: ""
+
+                    when (key) {
+                        "0" -> {
+                            ref.child("description").setValue(otoparkDurumu)
+                        }
+                        "1" -> {
+                            ref.child("description").setValue("%$dolulukYuzdesi")
+                        }
+                        "2", "3" -> {
+                            val options = listOf("Aktif", "Pasif")
+                            val spinner = Spinner(this)
+                            val spinnerAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, options)
+                            spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                            spinner.adapter = spinnerAdapter
+
+                            val selectedIndex = options.indexOf(description)
+                            if (selectedIndex >= 0) spinner.setSelection(selectedIndex)
+
+                            layout.addView(TextView(this).apply {
+                                text = "$title Durumu:"
+                                textSize = 16f
+                                setPadding(0, 10, 0, 4)
+                            })
+                            layout.addView(spinner)
+
+                            editableInputs.add(Pair(ref, spinner))
+                        }
                     }
                 }
 
-                val dolulukYuzdesi = if (toplamAlan > 0) (doluAlan * 100) / toplamAlan else 0
-                val otoparkDurumu = if (dolulukYuzdesi >= 95) "DOLU" else "BOŞ"
-
-                snapshot.children.forEachIndexed { index, cardSnap ->
-                    val title = cardSnap.child("title").getValue(String::class.java) ?: ""
-                    var description =
-                        cardSnap.child("description").getValue(String::class.java) ?: ""
-
-                    if (index == 0) { // Otopark Durumu
-                        description = otoparkDurumu
-                        cardSnap.ref.child("description").setValue(description)
-                    } else if (index == 1) { // Doluluk
-                        description = "%$dolulukYuzdesi"
-                        cardSnap.ref.child("description").setValue(description)
-                    } else if (index == 2 || index == 3) { // Kamera Durumu, Giriş/Çıkış → admin elle seçsin
-                        val options = listOf("Aktif", "Pasif")
-                        val spinner = Spinner(this)
-                        val spinnerAdapter =
-                            ArrayAdapter(this, android.R.layout.simple_spinner_item, options)
-                        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                        spinner.adapter = spinnerAdapter
-
-                        val selectedIndex = options.indexOf(description)
-                        if (selectedIndex >= 0) spinner.setSelection(selectedIndex)
-
-                        layout.addView(TextView(this).apply { text = "$title Durumu:" })
-                        layout.addView(spinner)
-
-                        editableInputs.add(Pair(cardSnap, spinner))
-                    }
-                }
-
-                builder.setView(layout)
+                builder.setView(ScrollView(this).apply { addView(layout) })
                 builder.setPositiveButton("Kaydet") { _, _ ->
-                    editableInputs.forEach { (cardSnap, spinner) ->
+                    editableInputs.forEach { (ref, spinner) ->
                         val selectedValue = spinner.selectedItem.toString()
-                        cardSnap.ref.child("description").setValue(selectedValue)
+                        ref.child("description").setValue(selectedValue)
                     }
                     Toast.makeText(this, "✅ İnfo kartlar güncellendi!", Toast.LENGTH_SHORT).show()
                 }
                 builder.setNegativeButton("İptal", null)
                 builder.show()
             }.addOnFailureListener {
-                Toast.makeText(
-                    this,
-                    "❌ Otopark verisi yüklenemedi: ${it.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this, "❌ İnfo kartlar yüklenemedi: ${it.message}", Toast.LENGTH_SHORT).show()
             }
         }.addOnFailureListener {
-            Toast.makeText(this, "❌ İnfo kartlar yüklenemedi: ${it.message}", Toast.LENGTH_SHORT)
-                .show()
+            Toast.makeText(this, "❌ Otopark verisi yüklenemedi: ${it.message}", Toast.LENGTH_SHORT).show()
         }
     }
+
+
+
+
+
+
+
 
     private fun showBildirimlerDialog() {
         val database = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
@@ -941,6 +986,65 @@ class AdminHomeActivity : AppCompatActivity() {
             .setNegativeButton("İptal", null)
             .show()
     }
+
+    private fun showGecmisAboneliklerDialog() {
+        val db = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+        val ref = db.getReference("gecmisAbonelikler")
+
+        val abonelikList = mutableListOf<String>()
+
+        ref.get().addOnSuccessListener { snapshot ->
+            snapshot.children.forEach { record ->
+                val email = record.child("email").getValue(String::class.java) ?: "-"
+                val baslangic = record.child("baslangic").getValue(String::class.java) ?: "-"
+                val bitis = record.child("bitis").getValue(String::class.java) ?: "-"
+                val ucret = record.child("ucret").getValue(Int::class.java) ?: 0
+
+                abonelikList.add("📧 $email\nBaşlangıç: $baslangic, Bitiş: $bitis, Ücret: $ucret₺")
+            }
+
+            val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, abonelikList)
+
+            AlertDialog.Builder(this)
+                .setTitle("Geçmiş Abonelikler")
+                .setAdapter(adapter, null)
+                .setNegativeButton("Kapat", null)
+                .show()
+        }.addOnFailureListener {
+            Toast.makeText(this, "❌ Geçmiş abonelikler yüklenemedi!", Toast.LENGTH_SHORT).show()
+        }
+    }
+    private fun showRezervasyonlarDialog() {
+        val db = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+        val ref = db.getReference("rezervasyonlar")
+
+        val rezervasyonList = mutableListOf<String>()
+
+        ref.get().addOnSuccessListener { snapshot ->
+            snapshot.children.forEach { rezervasyon ->
+                val plaka = rezervasyon.child("plaka").getValue(String::class.java) ?: "-"
+                val baslangic = rezervasyon.child("baslangic").getValue(String::class.java) ?: "-"
+                val bitis = rezervasyon.child("bitis").getValue(String::class.java) ?: "-"
+                val durum = rezervasyon.child("durum").getValue(String::class.java) ?: "-"
+                val kat = rezervasyon.child("kat").getValue(String::class.java) ?: "-"
+                val alan = rezervasyon.child("alan").getValue(String::class.java) ?: "-"
+
+                rezervasyonList.add("🚗 $plaka\nBaşlangıç: $baslangic\nBitiş: $bitis\nKat: $kat, Alan: $alan\nDurum: $durum")
+            }
+
+            val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, rezervasyonList)
+
+            AlertDialog.Builder(this)
+                .setTitle("Rezervasyonlar")
+                .setAdapter(adapter, null)
+                .setNegativeButton("Kapat", null)
+                .show()
+        }.addOnFailureListener {
+            Toast.makeText(this, "❌ Rezervasyonlar yüklenemedi!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
 
 
 

@@ -230,15 +230,21 @@ class HomeFragment : Fragment() {
                                     val plakalarNode = userSnapshot.child("plakalar")
                                     for (plakaSnap in plakalarNode.children) {
                                         val plakaKey = plakaSnap.key ?: continue
-                                        val plakaRef = kullaniciRef.child("plakalar").child(plakaKey)
+                                        val cikisYapanRef = db.getReference("cikisYapanKullanicilar").child(plakaKey)
 
-                                        plakaRef.child("giris_tarihi").setValue("")
-                                        plakaRef.child("giris_saati").setValue("")
-                                        plakaRef.child("cikis_tarihi").setValue("")
-                                        plakaRef.child("cikis_saati").setValue("")
-                                        plakaRef.child("alan").setValue("")
-                                        plakaRef.child("kat").setValue("")
+                                        cikisYapanRef.setValue(userData).addOnSuccessListener {
+                                            cikisYapanRef.child("gecmisOdeme").setValue(toplamUcret)
+
+                                            val plakaRef = kullaniciRef.child("plakalar").child(plakaKey)
+                                            plakaRef.child("giris_tarihi").setValue("")
+                                            plakaRef.child("giris_saati").setValue("")
+                                            plakaRef.child("cikis_tarihi").setValue("")
+                                            plakaRef.child("cikis_saati").setValue("")
+                                            plakaRef.child("alan").setValue("")
+                                            plakaRef.child("kat").setValue("")
+                                        }
                                     }
+
 
                                     // Ekrandaki değerleri sıfırla
                                     textUcret.text = "0₺"

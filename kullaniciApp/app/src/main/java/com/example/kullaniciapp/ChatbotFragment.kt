@@ -2,12 +2,21 @@ package com.example.kullaniciapp
 
 import android.app.AlertDialog
 import android.os.Bundle
+import android.util.Log
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.Priority
+import com.google.android.gms.location.LocationServices
 
 class ChatbotFragment : Fragment() {
 
@@ -19,10 +28,14 @@ class ChatbotFragment : Fragment() {
     private val messages = mutableListOf<ChatMessage>()
 
     private var adminMessageMode = false
+    private var havaDurumu: String? = null
 
     private val databaseUrl = "https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/"
     private val database = FirebaseDatabase.getInstance(databaseUrl)
 
+    companion object {
+        private const val API_KEY = "e8ed0a257bbb22d0dbaa89c3457c8ff2"
+    }
 
     override fun onCreateView(
         inflater: android.view.LayoutInflater, container: android.view.ViewGroup?,
@@ -39,10 +52,12 @@ class ChatbotFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
 
-
         if (messages.isEmpty()) {
             addStarterMessages()
         }
+
+        // Hava durumu bilgisini çekmek için bu fonksiyonu çağırın
+        fetchWeatherAndStore()
 
         adapter.clickListener = { selectedText ->
             when (selectedText) {
@@ -71,7 +86,6 @@ class ChatbotFragment : Fragment() {
                 }
             }
         }
-
 
         buttonSend.setOnClickListener {
             val userMessage = editTextMessage.text.toString().trim()
@@ -104,6 +118,70 @@ class ChatbotFragment : Fragment() {
         return view
     }
 
+    private fun fetchWeatherAndStore() {
+        val context = requireContext()
+
+        if (ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                1
+            )
+            return
+        }
+
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+            .addOnSuccessListener { location ->
+                if (location != null) {
+                    val lat = location.latitude
+                    val lon = location.longitude
+
+                    Log.d("Konum", "Lat: $lat, Lon: $lon")
+
+                    WeatherService.api.getWeatherByCoordinates(lat, lon, API_KEY)
+                        .enqueue(object : Callback<WeatherResponse> {
+                            override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
+                                if (response.isSuccessful) {
+                                    val weather = response.body()
+                                    val desc = weather?.weather?.firstOrNull()?.description ?: "bilgi yok"
+                                    val temp = weather?.main?.temp?.toInt() ?: 0
+                                    havaDurumu = "Hava: $desc, $temp°C"
+                                    Log.d("Hava", "Alındı: $havaDurumu")
+                                } else {
+                                    havaDurumu = "Hava bilgisi alınamadı."
+                                    Log.e("Hava", "Yanıt başarısız: ${response.code()}")
+                                }
+                            }
+
+                            override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
+                                havaDurumu = "Hava bilgisi alınamadı."
+                                Log.e("Hava", "Hata: ${t.message}")
+                            }
+                        })
+                } else {
+                    havaDurumu = "Konum alınamadı"
+                    Log.e("Konum", "getCurrentLocation null döndü")
+                }
+            }.addOnFailureListener {
+                havaDurumu = "Konum alınamadı"
+                Log.e("Konum", "getCurrentLocation başarısız: ${it.message}")
+            }
+    }
+
+    private fun getBotResponse(userText: String) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        ChatBot.getResponse(userText, uid, havaDurumu) { botReply ->
+            addMessage(botReply, isUser = false)
+            if (!adminMessageMode) addBotOptionsAgain()
+        }
+    }
+
     private fun addStarterMessages() {
         val starterMessages = listOf(
             ChatMessage("Merhaba! Ne öğrenmek istersiniz?", isUser = false),
@@ -112,6 +190,7 @@ class ChatbotFragment : Fragment() {
             ChatMessage("Park yerim?", isUser = false, isOption = true),
             ChatMessage("Ücret ne kadar?", isUser = false, isOption = true),
             ChatMessage("Geçmiş ödeme?", isUser = false, isOption = true),
+            ChatMessage("Bugünkü hava durumu", isUser = false, isOption = true), // Bu satır eklendi
             ChatMessage("Admin'e sor", isUser = false, isOption = true)
         )
         messages.addAll(starterMessages)
@@ -122,15 +201,6 @@ class ChatbotFragment : Fragment() {
         messages.add(ChatMessage(text, isUser))
         adapter.notifyItemInserted(messages.size - 1)
         recyclerView.scrollToPosition(messages.size - 1)
-    }
-
-    private fun getBotResponse(userText: String) {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-
-        ChatBot.getResponse(userText, uid) { botReply ->
-            addMessage(botReply, isUser = false)
-            if (!adminMessageMode) addBotOptionsAgain()
-        }
     }
 
     private fun addBotOptionsAgain() {
@@ -144,6 +214,7 @@ class ChatbotFragment : Fragment() {
             ChatMessage("Park yerim?", isUser = false, isOption = true),
             ChatMessage("Ücret ne kadar?", isUser = false, isOption = true),
             ChatMessage("Geçmiş ödeme?", isUser = false, isOption = true),
+            ChatMessage("Bugünkü hava durumu", isUser = false, isOption = true), // Bu satır eklendi
             ChatMessage("Admin'e sor", isUser = false, isOption = true)
         )
         messages.addAll(options)
@@ -188,8 +259,6 @@ class ChatbotFragment : Fragment() {
         val adminMessagesRef = database.getReference("adminMessages/messages")
         adminMessagesRef.push().setValue(data)
     }
-
-
 
     private fun sendMessageToAdmin(message: String) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: "testUser"
@@ -341,5 +410,4 @@ class ChatbotFragment : Fragment() {
 
         recyclerView.scrollToPosition(messages.size - 1)
     }
-
 }

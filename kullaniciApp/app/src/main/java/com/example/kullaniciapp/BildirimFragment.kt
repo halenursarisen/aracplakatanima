@@ -63,12 +63,16 @@ class BildirimFragment : Fragment() {
             .addOnSuccessListener { snapshot ->
                 if (snapshot.exists()) {
                     bildirimList.clear()
+                    val tempList = mutableListOf<Bildirim>()
                     for (child in snapshot.children) {
                         val mesaj = child.child("mesaj").value?.toString() ?: continue
                         val zaman = child.child("zaman").value?.toString() ?: ""
                         val tip = child.child("tip").value?.toString() ?: "info"
-                        bildirimList.add(Bildirim(mesaj, zaman, tip))
+                        tempList.add(Bildirim(mesaj, zaman, tip))
                     }
+                    bildirimList.clear()
+                    bildirimList.addAll(tempList.asReversed())  // Listeyi ters çevirerek ekliyoruz
+
                     adapter.notifyDataSetChanged()
                 }
             }

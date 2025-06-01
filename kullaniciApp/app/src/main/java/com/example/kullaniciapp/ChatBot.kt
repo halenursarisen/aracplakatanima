@@ -7,7 +7,7 @@ object ChatBot {
     private val databaseUrl = "https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/"
     private val database = FirebaseDatabase.getInstance(databaseUrl)
 
-    fun getResponse(userMessage: String, uid: String, callback: (String) -> Unit) {
+    fun getResponse(userMessage: String, uid: String, havaDurumu: String?, callback: (String) -> Unit){
         val userRef = database.getReference("kullanicilar").child(uid)
 
         userRef.get().addOnSuccessListener { snapshot ->
@@ -47,6 +47,7 @@ object ChatBot {
                     "ücret ne kadar?", "ucret ne kadar?", "ücret ne kadar" -> plakaBilgileriList.joinToString("\n\n") {
                         it.lines().find { line -> line.contains("Ücret:") } ?: "-"
                     }
+                    "bugünkü hava durumu", "hava durumu", "hava" -> havaDurumu ?: "Hava durumu bilgisi alınamadı."
                     else -> "Üzgünüm, bu konuda yardımcı olamıyorum."
                 }
 
