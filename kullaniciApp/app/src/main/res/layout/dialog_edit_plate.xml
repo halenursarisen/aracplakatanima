@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Giriş Tarihi - Saati"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginBottom="4dp" />
+
+    <EditText
+        android:id="@+id/inputGirisTarihi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Giriş Tarihi (GG/AA/YYYY)" />
+
+
+    <EditText
+        android:id="@+id/inputGirisSaati"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="örn: 12:30"
+        android:inputType="time"
+        android:layout_marginBottom="12dp" />
+
+    <Spinner
+        android:id="@+id/spinnerKat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:prompt="@string/prompt_kat_seciniz" />
+
+    <Spinner
+        android:id="@+id/spinnerAlan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:prompt="@string/prompt_alan_seciniz" />
+
+
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Çıkış Tarihi - Saati"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginBottom="4dp" />
+
+    <EditText
+        android:id="@+id/inputCikisTarihi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Çıkış Tarihi (GG/AA/YYYY)" />
+
+
+    <EditText
+        android:id="@+id/inputCikisSaati"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="örn: 14:30"
+        android:inputType="time" />
+</LinearLayout>
+

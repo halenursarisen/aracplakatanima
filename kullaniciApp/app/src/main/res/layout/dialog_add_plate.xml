@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/inputPlaka"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Plaka (zorunlu)"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/inputMarka"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Marka (opsiyonel)"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/inputModel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Model (opsiyonel)"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/inputSigorta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Sigorta Bitiş Tarihi (opsiyonel, yyyy-MM-dd)"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/inputKasko"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Kasko Bitiş Tarihi (opsiyonel, yyyy-MM-dd)"
+        android:inputType="date"
+        android:layout_marginTop="8dp" />
+
+
+    <EditText
+        android:id="@+id/inputRuhsat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Ruhsat No (opsiyonel)"
+        android:inputType="text" />
+</LinearLayout>

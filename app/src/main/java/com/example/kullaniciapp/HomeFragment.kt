@@ -1,5 +1,6 @@
 package com.example.kullaniciapp
 
+<<<<<<< HEAD
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -38,12 +39,27 @@ class HomeFragment : Fragment() {
         }
     }
 
+=======
+import android.content.Intent
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import com.google.firebase.auth.FirebaseAuth
+
+class HomeFragment : Fragment() {
+
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
+<<<<<<< HEAD
         textKullaniciAdSoyad = view.findViewById(R.id.textKullaniciAdSoyad)
         textGecenSure = view.findViewById(R.id.textGecenSure)
         val viewPager = view.findViewById<ViewPager2>(R.id.infoViewPager)
@@ -169,13 +185,28 @@ class HomeFragment : Fragment() {
 
         view.findViewById<Button>(R.id.buttonRezervasyon).setOnClickListener {
             Toast.makeText(requireContext(), "Rezervasyon ekranı yakında!", Toast.LENGTH_SHORT).show()
+=======
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email
+        val textWelcome = view.findViewById<TextView>(R.id.textWelcome)
+        val buttonLogout = view.findViewById<Button>(R.id.buttonLogout)
+
+        textWelcome.text = "Hoş geldin, $userEmail"
+
+        buttonLogout.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+            startActivity(Intent(requireContext(), MainActivity::class.java))
+            activity?.finish()
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
         }
 
         return view
     }
+<<<<<<< HEAD
 
     override fun onDestroyView() {
         super.onDestroyView()
         handler.removeCallbacks(timerRunnable)
     }
+=======
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
 }

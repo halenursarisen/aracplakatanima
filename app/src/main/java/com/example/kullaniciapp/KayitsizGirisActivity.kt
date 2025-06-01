@@ -2,9 +2,16 @@ package com.example.kullaniciapp
 
 import android.content.Intent
 import android.os.Bundle
+<<<<<<< HEAD
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
+=======
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
 import com.google.firebase.database.*
 
 class KayitsizGirisActivity : AppCompatActivity() {
@@ -12,8 +19,12 @@ class KayitsizGirisActivity : AppCompatActivity() {
     private lateinit var plakaEditText: EditText
     private lateinit var buttonDevam: Button
     private lateinit var buttonGeri: Button
+<<<<<<< HEAD
     private lateinit var databaseRef: DatabaseReference
     private lateinit var auth: FirebaseAuth
+=======
+    private lateinit var database: DatabaseReference
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,6 +34,7 @@ class KayitsizGirisActivity : AppCompatActivity() {
         buttonDevam = findViewById(R.id.buttonDevam)
         buttonGeri = findViewById(R.id.buttonGeri)
 
+<<<<<<< HEAD
         auth = FirebaseAuth.getInstance()
         databaseRef = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
             .getReference("kullanicilar")
@@ -84,10 +96,43 @@ class KayitsizGirisActivity : AppCompatActivity() {
                                         Toast.makeText(this@KayitsizGirisActivity, "Anonim giriş başarısız: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                                     }
                                 }
+=======
+        database = FirebaseDatabase.getInstance().reference
+
+        // 🔙 Geri Dön Butonu
+        buttonGeri.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+            finish()
+        }
+
+        // 🚗 Devam Et Butonu
+        buttonDevam.setOnClickListener {
+            val girilenPlaka = plakaEditText.text.toString().uppercase().trim()
+
+            if (girilenPlaka.isEmpty()) {
+                Toast.makeText(this, "Lütfen plakanızı girin", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // plakaSahipligi → plaka → UID eşleşmesi
+            database.child("plakaSahipligi").child(girilenPlaka)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (snapshot.exists()) {
+                            val uid = snapshot.getValue(String::class.java)
+                            Toast.makeText(applicationContext, "Plaka eşleşti!", Toast.LENGTH_SHORT).show()
+                            startActivity(Intent(this@KayitsizGirisActivity, MainBottomActivity::class.java))
+                            finish()
+                        } else {
+                            Toast.makeText(applicationContext, "Bu plakaya ait kullanıcı bulunamadı", Toast.LENGTH_SHORT).show()
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
                         }
                     }
 
                     override fun onCancelled(error: DatabaseError) {
+<<<<<<< HEAD
                         Toast.makeText(this@KayitsizGirisActivity, "Veritabanı hatası: ${error.message}", Toast.LENGTH_SHORT).show()
                     }
                 })
@@ -100,3 +145,11 @@ class KayitsizGirisActivity : AppCompatActivity() {
     }
 }
 
+=======
+                        Toast.makeText(applicationContext, "Veri okunamadı", Toast.LENGTH_SHORT).show()
+                    }
+                })
+        }
+    }
+}
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045

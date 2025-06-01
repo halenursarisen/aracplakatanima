@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<<<<<<< HEAD
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -32,4 +33,19 @@
         android:padding="8dp"
         android:scrollbars="vertical" />
 
+=======
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".BildirimFragment">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/bildirimRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:padding="8dp"
+        android:scrollbars="vertical" />
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
 </LinearLayout>
