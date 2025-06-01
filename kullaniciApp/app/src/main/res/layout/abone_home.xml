@@ -37,18 +37,6 @@
             android:layout_marginTop="12dp"
             android:layout_marginBottom="16dp" />
 
-        <!-- 🕓 Geçen Süre -->
-
-        <TextView
-            android:id="@+id/textGecenSure"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Geçen park süresi: 00:00:00"
-            android:textSize="18sp"
-            android:textColor="#333"
-            android:layout_marginBottom="16dp" />
-
-
         <!-- 🔄 Bilgi Kartları -->
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/infoViewPager"
@@ -98,41 +86,7 @@
                 android:textSize="16sp" />
         </LinearLayout>
 
-        <!-- 💸 Ödeme Bilgisi -->
-        <LinearLayout
-            android:id="@+id/layoutOdemeBolumu"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="#E0F7FA"
-            android:padding="12dp"
-            android:layout_marginBottom="12dp"
-            android:elevation="2dp">
-
-            <TextView
-                android:id="@+id/textUcret"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Toplam Ücret:"
-                android:textSize="17sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/textTarifeBilgisi"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tarife: İlk 30 dk ücretsiz, her ek saat 10₺, maksimum günlük 100₺"
-                android:textSize="14sp"
-                android:layout_marginBottom="8dp" />
-
-            <Button
-                android:id="@+id/buttonOde"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ŞİMDİ ÖDE" />
-        </LinearLayout>
-
-        <!-- 📆 Rezervasyon Kartı (güncellenmiş) -->
+        <!-- 📆 Rezervasyon Kartı -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -174,46 +128,6 @@
                 android:text="REZERVASYON OLUŞTUR"
                 android:layout_marginTop="8dp" />
         </LinearLayout>
-
-        <!-- 📋 Aktif Rezervasyon Bilgi Kartı -->
-        <LinearLayout
-            android:id="@+id/layoutRezervasyonBilgi"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="#FFF3E0"
-            android:padding="12dp"
-            android:elevation="2dp"
-            android:layout_marginBottom="16dp"
-            android:visibility="gone">
-
-            <TextView
-                android:id="@+id/textRezervasyonBilgi"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Aktif rezervasyon bilgisi burada gösterilecek."
-                android:textSize="15sp"
-                android:textColor="#000"
-                android:layout_marginBottom="8dp" />
-
-            <Button
-                android:id="@+id/buttonRezervasyonIptal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="REZERVASYONU İPTAL ET"
-                android:backgroundTint="@color/design_default_color_error"
-                android:textColor="@android:color/white" />
-        </LinearLayout>
-
-        <!-- 💳 Geçmiş Ödeme -->
-        <TextView
-            android:id="@+id/textGecmisOdeme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Geçmiş Ödeme:"
-            android:textSize="14sp"
-            android:layout_marginBottom="16dp" />
-
 
     </LinearLayout>
 </ScrollView>

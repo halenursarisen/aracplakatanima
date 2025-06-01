@@ -18,6 +18,10 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import android.os.Build
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class HesabimFragment : Fragment() {
 
@@ -51,6 +55,9 @@ class HesabimFragment : Fragment() {
         logoutButton = view.findViewById(R.id.buttonLogout)
         editPasswordButton = view.findViewById(R.id.buttonEditPassword)
         recyclerView = view.findViewById(R.id.recyclerViewPlates)
+
+        val textAbonelikDurumu = view.findViewById<TextView>(R.id.textAbonelikDurumu)
+        val buttonAboneOl = view.findViewById<Button>(R.id.buttonAboneOl)
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -102,6 +109,83 @@ class HesabimFragment : Fragment() {
         recyclerView.adapter = adapter
 
         loadUserData(ref)
+        // 💛 ABONELİK DURUMU YÜKLEME
+
+        ref.child("abonelikDurumu").get().addOnSuccessListener { snapshot ->
+            val abonelikDurumu = snapshot.getValue(String::class.java) ?: "normal"
+            textAbonelikDurumu.text = "Abonelik Durumu: ${abonelikDurumu.capitalize()}"
+            buttonAboneOl.text = if (abonelikDurumu == "abonelikli") "Aboneliği İptal Et" else "Aylık Abone Ol (100₺)"
+
+            // ✅ BURADA ABONELİK SÜRESİNİ KONTROL ET
+            checkSubscriptionStatus(ref, textAbonelikDurumu, buttonAboneOl)
+        }
+
+
+        // 💛 ABONE OL BUTONU TIKLAMA
+        buttonAboneOl.setOnClickListener {
+            ref.child("abonelikDurumu").get().addOnSuccessListener { snapshot ->
+                val mevcutDurum = snapshot.getValue(String::class.java) ?: "normal"
+
+                if (mevcutDurum == "abonelikli") {
+                    // Aboneliği iptal et → geçmişe arşivle
+                    ref.get().addOnSuccessListener { userSnapshot ->
+                        val eskiBaslangic = userSnapshot.child("abonelikBaslangic").getValue(String::class.java) ?: ""
+                        val eskiBitis = userSnapshot.child("abonelikBitis").getValue(String::class.java) ?: ""
+                        val eskiUcret = userSnapshot.child("abonelikUcreti").getValue(Int::class.java) ?: 0
+                        val email = userSnapshot.child("eposta").getValue(String::class.java) ?: "-"
+                        val plakalarSnapshot = userSnapshot.child("plakalar")
+                        val plakalarList = plakalarSnapshot.children.mapNotNull { it.key }
+
+                        val arşivKaydi = mapOf(
+                            "baslangic" to eskiBaslangic,
+                            "bitis" to eskiBitis,
+                            "ucret" to eskiUcret,
+                            "email" to email,
+                            "plakalar" to plakalarList
+                        )
+
+                        // ✅ Kullanıcının kendi altında geçmişe kaydet
+                        ref.child("gecmisAbonelikler").push().setValue(arşivKaydi)
+
+                        // ✅ Admin genel arşivine kaydet
+                        val adminRef = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+                            .getReference("gecmisAbonelikler")
+                        adminRef.push().setValue(arşivKaydi)
+
+                        // ✅ Aktif abonelik bilgilerini temizle
+                        ref.child("abonelikDurumu").setValue("normal")
+                        ref.child("abonelikBaslangic").removeValue()
+                        ref.child("abonelikBitis").removeValue()
+                        ref.child("abonelikUcreti").removeValue()
+
+                        textAbonelikDurumu.text = "Abonelik Durumu: Normal"
+                        buttonAboneOl.text = "Aylık Abone Ol (100₺)"
+                        Toast.makeText(requireContext(), "❌ Abonelik iptal edildi, arşiv kaydedildi.", Toast.LENGTH_SHORT).show()
+                    }
+
+                } else {
+                    // Yeni abonelik başlat
+                    val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                    val now = Date()
+                    val cal = Calendar.getInstance()
+                    cal.time = now
+                    cal.add(Calendar.MONTH, 1)
+                    val abonelikBaslangic = sdf.format(now)
+                    val abonelikBitis = sdf.format(cal.time)
+                    val abonelikUcreti = 100
+
+                    ref.child("abonelikDurumu").setValue("abonelikli")
+                    ref.child("abonelikBaslangic").setValue(abonelikBaslangic)
+                    ref.child("abonelikBitis").setValue(abonelikBitis)
+                    ref.child("abonelikUcreti").setValue(abonelikUcreti)
+
+                    textAbonelikDurumu.text = "Abonelik Durumu: Abonelikli"
+                    buttonAboneOl.text = "Aboneliği İptal Et"
+                    Toast.makeText(requireContext(), "✅ Aylık abonelik aktif!", Toast.LENGTH_SHORT).show()
+                }
+
+            }
+        }
 
         editNameButton.setOnClickListener {
             showEditDialog("İsim - Soyisim", textName.text.toString()) { newName ->
@@ -250,7 +334,7 @@ class HesabimFragment : Fragment() {
     }
 
     private fun checkInsuranceAndKasko(plakalarSnapshot: DataSnapshot) {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
         val today = LocalDate.now()
 
         plakalarSnapshot.children.forEach { plaka ->
@@ -318,4 +402,72 @@ class HesabimFragment : Fragment() {
             .setNegativeButton("İptal", null)
             .show()
     }
+    private fun checkSubscriptionStatus(ref: DatabaseReference, textAbonelikDurumu: TextView, buttonAboneOl: Button) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            // Oreo öncesi cihazlar için işlem yapmıyoruz
+            return
+        }
+
+        ref.child("abonelikBitis").get().addOnSuccessListener { snapshot ->
+            val abonelikBitisStr = snapshot.getValue(String::class.java)
+
+            ref.child("abonelikDurumu").get().addOnSuccessListener { durumSnapshot ->
+                val mevcutDurum = durumSnapshot.getValue(String::class.java) ?: "normal"
+
+                if (mevcutDurum == "abonelikli" && !abonelikBitisStr.isNullOrEmpty()) {
+                    try {
+                        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                        val abonelikBitisDate = LocalDate.parse(abonelikBitisStr, formatter)
+                        val today = LocalDate.now()
+
+                        if (today.isAfter(abonelikBitisDate)) {
+                            // Süre dolmuş
+                            ref.get().addOnSuccessListener { userSnapshot ->
+                                val eskiBaslangic = userSnapshot.child("abonelikBaslangic").getValue(String::class.java) ?: ""
+                                val eskiBitis = userSnapshot.child("abonelikBitis").getValue(String::class.java) ?: ""
+                                val eskiUcret = userSnapshot.child("abonelikUcreti").getValue(Int::class.java) ?: 0
+                                val email = userSnapshot.child("eposta").getValue(String::class.java) ?: "-"
+                                val plakalarSnapshot = userSnapshot.child("plakalar")
+                                val plakalarList = plakalarSnapshot.children.mapNotNull { it.key }
+
+                                val arsivKaydi = mapOf(
+                                    "baslangic" to eskiBaslangic,
+                                    "bitis" to eskiBitis,
+                                    "ucret" to eskiUcret,
+                                    "email" to email,
+                                    "plakalar" to plakalarList,
+                                    "bitisTarihi" to SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(Date())
+                                )
+
+                                // Kullanıcı altına kaydet
+                                ref.child("gecmisAbonelikler").push().setValue(arsivKaydi)
+
+                                // Admin genel arşivine kaydet
+                                val adminRef = FirebaseDatabase.getInstance("https://aracplakatanima-default-rtdb.europe-west1.firebasedatabase.app/")
+                                    .getReference("gecmisAbonelikler")
+                                adminRef.push().setValue(arsivKaydi)
+
+                                // Aktif abonelik bilgilerini temizle
+                                ref.child("abonelikDurumu").setValue("normal")
+                                ref.child("abonelikBaslangic").removeValue()
+                                ref.child("abonelikBitis").removeValue()
+                                ref.child("abonelikUcreti").removeValue()
+
+                                // UI güncelle
+                                textAbonelikDurumu.text = "Abonelik Durumu: Normal"
+                                buttonAboneOl.text = "Aylık Abone Ol (100₺)"
+                                Toast.makeText(requireContext(), "❗ Abonelik süreniz doldu ve iptal edildi.", Toast.LENGTH_LONG).show()
+
+                            }.addOnFailureListener { e ->
+                                Log.e("FIREBASE_HATA", "Abonelik arşivleme hatası: ${e.message}")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("DATE_PARSE_ERROR", "Abonelik bitiş tarihi okunamadı: ${e.message}")
+                    }
+                }
+            }
+        }
+    }
+
 }

@@ -1,8 +1,7 @@
 package com.example.kullaniciapp
 
+
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,34 +14,13 @@ import com.google.firebase.database.*
 import com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.TimeUnit
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.view.animation.AnimationUtils
 
-class HomeFragment : Fragment() {
+class AboneHomeFragment : Fragment() {
 
-    private lateinit var textGecenSure: TextView
     private lateinit var textKullaniciAdSoyad: TextView
-    private lateinit var textGecmisOdeme: TextView
-    private lateinit var buttonOde: Button
-    private lateinit var textUcret: TextView
-    private lateinit var textTarifeBilgisi: TextView // Yeni eklendi
-
-    private val handler = Handler(Looper.getMainLooper())
-    private var startTimeMillis: Long = 0L
-
-    private val timerRunnable = object : Runnable {
-        override fun run() {
-            val elapsedMillis = System.currentTimeMillis() - startTimeMillis
-            val hours = (elapsedMillis / (1000 * 60 * 60)) % 24
-            val minutes = (elapsedMillis / (1000 * 60)) % 60
-            val seconds = (elapsedMillis / 1000) % 60
-            val timeFormatted = String.format("%02d:%02d:%02d", hours, minutes, seconds)
-            textGecenSure.text = "Geçen park süresi: $timeFormatted"
-            handler.postDelayed(this, 1000)
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -60,16 +38,8 @@ class HomeFragment : Fragment() {
         val uid = auth.currentUser?.uid
 
         textKullaniciAdSoyad = view.findViewById(R.id.textKullaniciAdSoyad)
-        textGecenSure = view.findViewById(R.id.textGecenSure)
         val viewPager = view.findViewById<ViewPager2>(R.id.infoViewPager)
         val dotsIndicator = view.findViewById<WormDotsIndicator>(R.id.dotsIndicator)
-
-        // Ödeme ve tarife ile ilgili View'ları burada tanımlıyoruz
-        textGecmisOdeme = view.findViewById(R.id.textGecmisOdeme)
-        buttonOde = view.findViewById(R.id.buttonOde)
-        textUcret = view.findViewById(R.id.textUcret)
-        textTarifeBilgisi = view.findViewById(R.id.textTarifeBilgisi) // Yeni eklendi
-
 
         if (uid != null) {
             // Kullanıcı adı
@@ -98,174 +68,17 @@ class HomeFragment : Fragment() {
                 dotsIndicator.attachTo(viewPager)
             }
 
-            // Kullanıcı bilgileri ve abonelik durumu kontrolü
-            db.getReference("kullanicilar").child(uid).get().addOnSuccessListener { userSnapshot ->
-                val abonelikDurumu =
-                    userSnapshot.child("abonelikDurumu").getValue(String::class.java) ?: "normal"
-                val maksimumGunlukUcret =
-                    userSnapshot.child("maksimumGunlukUcret").getValue(Int::class.java) ?: 100
-                val gecmisOdeme =
-                    userSnapshot.child("gecmisOdeme").getValue(String::class.java) ?: "-"
-
-                val layoutOdemeBolumu = view.findViewById<LinearLayout>(R.id.layoutOdemeBolumu)
-
-
-                // Abonelik durumuna göre ödeme bölümü ve tarife bilgisi görünürlüğü
-                if (abonelikDurumu == "abonelikli") {
-                    buttonOde.visibility = View.GONE
-                    textUcret.visibility = View.GONE
-                    textGecmisOdeme.visibility = View.GONE
-                    textTarifeBilgisi.visibility = View.GONE
-                    layoutOdemeBolumu.visibility = View.GONE
-
-                    textGecenSure.textSize = 14f
-                } else {
-                    buttonOde.visibility = View.VISIBLE
-                    textUcret.visibility = View.VISIBLE
-                    textGecmisOdeme.visibility = View.VISIBLE
-                    textTarifeBilgisi.visibility = View.VISIBLE // Tarife bilgisi gösterildi
-                }
-
-                val plakalarNode = userSnapshot.child("plakalar")
-                val textPlaka = view.findViewById<TextView>(R.id.textPlaka)
-                val textParkAlani = view.findViewById<TextView>(R.id.textParkAlani)
-                val textGirisSaati = view.findViewById<TextView>(R.id.textGirisSaati)
-
-                val plakaText = StringBuilder()
-                val parkAlaniText = StringBuilder()
-                val girisSaatiText = StringBuilder()
-                val ucretText = StringBuilder()
-
-                var sayaçBaşlatıldı = false
-
-                plakalarNode.children.forEach { plakaSnap ->
-                    val plakaKey = plakaSnap.key ?: "-"
-                    val alan = plakaSnap.child("alan").getValue(String::class.java) ?: "-"
-                    val girisSaatiStr =
-                        plakaSnap.child("giris_saati").getValue(String::class.java) ?: "-"
-                    val girisTarihiStr =
-                        plakaSnap.child("giris_tarihi").getValue(String::class.java) ?: "-"
-
-                    plakaText.append("Plaka: $plakaKey\n")
-                    parkAlaniText.append("Park Alanı: $alan\n")
-                    girisSaatiText.append("Giriş Tarihi: $girisTarihiStr, Saat: $girisSaatiStr\n")
-
-                    val abonelikDurumuLower = abonelikDurumu.toLowerCase(Locale.getDefault())
-
-                    if (!girisSaatiStr.isNullOrEmpty() && girisSaatiStr != "-" &&
-                        !girisTarihiStr.isNullOrEmpty() && girisTarihiStr != "-") {
-
-                        val fullDateStr = "$girisTarihiStr $girisSaatiStr"
-                        val sdfFull = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-                        try {
-                            val girisDate = sdfFull.parse(fullDateStr)
-                            if (!sayaçBaşlatıldı) {
-                                startTimeMillis = girisDate.time
-                                handler.post(timerRunnable)
-                                sayaçBaşlatıldı = true
-                            }
-                        } catch (_: Exception) {
-                            textGecenSure.text = "Geçen park süresi: Hesaplanamadı (Tarih/Saat formatı hatası)"
-                            handler.removeCallbacks(timerRunnable)
-                        }
-                    } else {
-                        textGecenSure.text = "Geçen park süresi: Giriş yapılmamış"
-                        handler.removeCallbacks(timerRunnable)
-                    }
-
-
-                    // Ücret hesaplaması için de tarih ve saati birleştiriyoruz
-                    if (girisSaatiStr != "-" && girisTarihiStr != "-") {
-                        val fullDateStr = "$girisTarihiStr $girisSaatiStr"
-                        val sdfFull = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-                        try {
-                            val girisDate = sdfFull.parse(fullDateStr)
-                            val now = Date()
-                            val diffMinutes =
-                                TimeUnit.MILLISECONDS.toMinutes(now.time - girisDate.time)
-
-                            var toplamUcret = 0
-                            val hesaplananUcret = if (abonelikDurumu == "abonelikli") {
-                                "Abonelikli (Aylık ödeme dahil)"
-                            } else {
-                                if (diffMinutes > 30) {
-                                    val ekSaatler =
-                                        Math.ceil((diffMinutes - 30).toDouble() / 60).toInt()
-                                    toplamUcret = ekSaatler * 10
-                                }
-                                if (toplamUcret > maksimumGunlukUcret) {
-                                    toplamUcret = maksimumGunlukUcret
-                                }
-                                "$toplamUcret₺ (Maksimum günlük)"
-                            }
-                            ucretText.append("$plakaKey → $hesaplananUcret\n")
-                        } catch (_: Exception) {
-                            ucretText.append("$plakaKey → Hesaplanamadı (Tarih/Saat formatı hatası)\n")
-                        }
-                    } else {
-                        ucretText.append("$plakaKey → Giriş tarihi veya saati yok\n")
-                    }
-                }
-
-                textPlaka.text = plakaText.toString().trim()
-                textParkAlani.text = parkAlaniText.toString().trim()
-                textGirisSaati.text = girisSaatiText.toString().trim()
-                textUcret.text = ucretText.toString().trim()
-                textGecmisOdeme.text = "Geçmiş Ödeme: $gecmisOdeme"
-
-                // Button "Öde" click listener (yalnızca abone olmayanlar için işlem yapacak şekilde)
-                buttonOde.setOnClickListener {
-                    if (abonelikDurumu != "abonelikli") {
-                        val toplamUcret = textUcret.text.toString()
-                        val kullaniciRef = db.getReference("kullanicilar").child(uid!!)
-                        val cikisYapanRef = db.getReference("cikisYapanKullanicilar").child(uid)
-
-                        kullaniciRef.get().addOnSuccessListener { userSnapshot ->
-                            val userData = userSnapshot.value
-
-                            if (userData != null) {
-                                cikisYapanRef.setValue(userData).addOnSuccessListener {
-                                    cikisYapanRef.child("gecmisOdeme").setValue(toplamUcret)
-
-                                    val plakalarNode = userSnapshot.child("plakalar")
-                                    for (plakaSnap in plakalarNode.children) {
-                                        val plakaKey = plakaSnap.key ?: continue
-                                        val plakaRef = kullaniciRef.child("plakalar").child(plakaKey)
-
-                                        plakaRef.child("giris_tarihi").setValue("")
-                                        plakaRef.child("giris_saati").setValue("")
-                                        plakaRef.child("cikis_tarihi").setValue("")
-                                        plakaRef.child("cikis_saati").setValue("")
-                                        plakaRef.child("alan").setValue("")
-                                        plakaRef.child("kat").setValue("")
-                                    }
-
-                                    // Ekrandaki değerleri sıfırla
-                                    textUcret.text = "0₺"
-                                    textGecenSure.text = "Geçen Süre: 0 saat 0 dakika 0 saniye"
-                                    view.findViewById<TextView>(R.id.textGirisTarihi)?.text = "Giriş Tarihi: "
-                                    view.findViewById<TextView>(R.id.textGirisSaati)?.text = "Giriş Saati: "
-                                    view.findViewById<TextView>(R.id.textParkAlani)?.text = "Park Alanı: "
-                                    textGecmisOdeme.text = "Geçmiş Ödeme: -"
-
-                                    Toast.makeText(requireContext(), "✅ Ödeme kaydedildi, plakaların alt verileri sıfırlandı.", Toast.LENGTH_LONG).show()
-                                }.addOnFailureListener {
-                                    Toast.makeText(requireContext(), "❌ Çıkış yapanlara kayıt başarısız: ${it.message}", Toast.LENGTH_LONG).show()
-                                }
-                            }
-                        }
-                    } else {
-                        Toast.makeText(requireContext(), "Abonelikli kullanıcılar için ödeme gerekmez.", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
+            // Rezervasyon bilgi ikonu
             setupRezervasyonInfoIcon(view, db, uid)
         }
 
+        // Rezervasyon butonu
         view.findViewById<Button>(R.id.buttonRezervasyon).setOnClickListener {
+
             val rezervasyonRef = db.getReference("rezervasyonlar")
             val kullaniciPlakalarRef = db.getReference("kullanicilar").child(uid!!).child("plakalar")
 
+            // Önce plakaları çekelim
             kullaniciPlakalarRef.get().addOnSuccessListener { snapshot ->
                 val plakaListesi = snapshot.children.mapNotNull { it.key }
 
@@ -274,6 +87,7 @@ class HomeFragment : Fragment() {
                     return@addOnSuccessListener
                 }
 
+                // Spinner dialogu hazırla
                 val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_plaka_spinner, null)
                 val spinner = dialogView.findViewById<Spinner>(R.id.spinnerPlaka)
 
@@ -287,6 +101,7 @@ class HomeFragment : Fragment() {
                     .setPositiveButton("Devam") { _, _ ->
                         val secilenPlaka = spinner.selectedItem as String
 
+                        // Aktif rezervasyon var mı kontrol et
                         rezervasyonRef.get().addOnSuccessListener { rezSnapshot ->
                             var aktifVar = false
 
@@ -303,6 +118,7 @@ class HomeFragment : Fragment() {
                             if (aktifVar) {
                                 Toast.makeText(requireContext(), "❗ Zaten aktif bir rezervasyon var, yeni oluşturulamaz.", Toast.LENGTH_LONG).show()
                             } else {
+                                // Başlangıç zamanı seç
                                 showDateTimePicker { baslangicSaat ->
                                     val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
                                     val start = sdf.parse(baslangicSaat)
@@ -313,6 +129,7 @@ class HomeFragment : Fragment() {
                                         return@showDateTimePicker
                                     }
 
+                                    // Bitiş zamanı seç
                                     showDateTimePicker { bitisSaat ->
                                         val end = sdf.parse(bitisSaat)
 
@@ -321,6 +138,7 @@ class HomeFragment : Fragment() {
                                             return@showDateTimePicker
                                         }
 
+                                        // Boş yer bul ve ata
                                         findAndAssignSpot(db.getReference("otopark_duzeni")) { kat, alan ->
                                             if (kat != null && alan != null) {
                                                 val yeniRezId = rezervasyonRef.push().key ?: return@findAndAssignSpot
@@ -359,6 +177,7 @@ class HomeFragment : Fragment() {
                 Toast.makeText(requireContext(), "Plakalar çekilemedi: ${it.message}", Toast.LENGTH_LONG).show()
             }
         }
+
         return view
     }
 
@@ -399,6 +218,7 @@ class HomeFragment : Fragment() {
                             .setMessage(aktifRezBilgi)
                             .setPositiveButton("Tamam", null)
                             .setNegativeButton("❌ İptal Et") { _, _ ->
+                                // Aktif rezervasyon ID’sini bul ve durumu iptal yap
                                 rezervasyonRef.get().addOnSuccessListener { snapshot ->
                                     for (rezSnap in snapshot.children) {
                                         val kullaniciId = rezSnap.child("kullanici_id").getValue(String::class.java)
@@ -428,11 +248,6 @@ class HomeFragment : Fragment() {
                     Toast.makeText(requireContext(), "Rezervasyon bilgisi çekilemedi: ${it.message}", Toast.LENGTH_LONG).show()
                 }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        handler.removeCallbacks(timerRunnable)
     }
 
     fun findAndAssignSpot(otoparkRef: DatabaseReference, onResult: (String?, String?) -> Unit) {
