@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+<<<<<<< HEAD
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+
+=======
 
     <!-- ✅ Firebase ve ağ işlemleri için gerekli izin -->
     <uses-permission android:name="android.permission.INTERNET"/>
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
 
     <application
         android:allowBackup="true"
@@ -16,12 +25,25 @@
         android:theme="@style/Theme.KullaniciApp"
         tools:targetApi="31">
 
+<<<<<<< HEAD
+        <activity android:name=".InfoCard" android:exported="false" />
+        <activity android:name=".KayitOlActivity" android:exported="false" />
+        <activity android:name=".KayitsizGirisActivity" android:exported="false" />
+        <activity android:name=".MisafirHomeActivity" />
+        <activity android:name=".SifremiUnuttumActivity" />
+        <activity android:name=".AdminHomeActivity" />
+
+
+
+
+=======
         <activity
             android:name=".KayitOlActivity"
             android:exported="false" />
         <activity
             android:name=".KayitsizGirisActivity"
             android:exported="false" />
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -32,16 +54,24 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+<<<<<<< HEAD
+
+=======
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
         <activity
             android:name=".MainBottomActivity"
             android:exported="true"
             android:label="@string/app_name"
+<<<<<<< HEAD
+            android:theme="@style/Theme.KullaniciApp" />
+=======
             android:theme="@style/Theme.KullaniciApp">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
     </application>
 
 </manifest>

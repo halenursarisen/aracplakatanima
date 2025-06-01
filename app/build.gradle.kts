@@ -1,7 +1,14 @@
 plugins {
+<<<<<<< HEAD
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
+=======
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services") // Firebase için gerekli
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
 }
 
 android {
@@ -42,7 +49,11 @@ android {
     }
 
     composeOptions {
+<<<<<<< HEAD
+        kotlinCompilerExtensionVersion = "1.5.11" // uyumlu sürüm (libs.toml'da varsa oradan alınır)
+=======
         kotlinCompilerExtensionVersion = "1.5.13"
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
     }
 }
 
@@ -59,10 +70,14 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+<<<<<<< HEAD
+    implementation(libs.firebase.firestore.ktx)
+=======
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
 
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -71,6 +86,21 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+<<<<<<< HEAD
+    implementation("com.google.firebase:firebase-auth:22.3.0")
+    implementation("com.google.firebase:firebase-database-ktx:20.3.0")
+    implementation("com.google.firebase:firebase-firestore:24.10.0")
+    implementation("com.tbuonomo:dotsindicator:4.3")
+    implementation("androidx.fragment:fragment-ktx:1.6.1")
+    implementation("com.google.android.material:material:1.11.0")
+    implementation("androidx.recyclerview:recyclerview:1.3.1")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+
+}
+=======
     // Firebase
     implementation("com.google.firebase:firebase-auth:22.3.0")
     implementation("com.google.firebase:firebase-database-ktx:20.3.0")
@@ -79,3 +109,4 @@ dependencies {
 }
 
 // apply satırı gerekli değil çünkü plugins {} bloğunda zaten var
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045

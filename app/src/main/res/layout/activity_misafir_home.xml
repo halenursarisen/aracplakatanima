@@ -1,0 +1,155 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAFAFA">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:gravity="center_horizontal">
+
+        <!-- ⚠️ Kayan Uyarı -->
+        <TextView
+            android:id="@+id/textAnimUyari"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="⚠️ Değerli eşyalarınızı araçlarınızda bırakmayın, işletme sorumlu değildir."
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#B91C1C"
+            android:background="#FFF59D"
+            android:padding="8dp"
+            android:gravity="center"
+            android:layout_marginBottom="12dp" />
+        <!-- ⏱ Geçen Süre -->
+        <TextView
+            android:id="@+id/textGecenSure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Geçen park süresi: 00:00:00"
+            android:textSize="18sp"
+            android:textColor="#333"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 👤 Kullanıcı Ad Soyad -->
+        <TextView
+            android:id="@+id/textHosgeldin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hoş geldin!"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 🔄 ViewPager -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/infoViewPager"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:layout_marginBottom="12dp" />
+
+        <com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
+            android:id="@+id/dotsIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            app:dotsColor="#BDBDBD"
+            app:selectedDotColor="#1976D2" />
+
+
+
+        <!-- 🚗 Plaka Kartı -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#ECEFF1"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:elevation="2dp">
+
+            <TextView
+                android:id="@+id/textPlaka"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Plaka: -"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/textGirisSaati"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Giriş Saati: -"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/textParkAlani"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Park Alanı: -"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- 💸 Ücret Kartı -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#E0F7FA"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:elevation="2dp">
+
+            <TextView
+                android:id="@+id/textUcret"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Toplam Ücret: -"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textTarife"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tarife: İlk 30 dk ücretsiz, sonra 10₺/saat"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/buttonOde"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ŞİMDİ ÖDE" />
+        </LinearLayout>
+
+
+
+        <!-- 🔑 Kayıt Ol Butonu -->
+        <Button
+            android:id="@+id/buttonKayitOl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Kayıt Ol"
+            android:backgroundTint="#10B981"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="8dp" />
+
+
+        <!-- 🚪 Çıkış Yap Butonu -->
+        <Button
+            android:id="@+id/buttonCikisYap"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Çıkış Yap"
+            android:backgroundTint="#EF4444"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+</ScrollView>

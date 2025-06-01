@@ -5,6 +5,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+<<<<<<< HEAD
+    <!-- Fragment Alanı -->
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_above="@id/bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Alt Menü -->
+=======
     <!-- Fragmentlerin yükleneceği alan -->
     <FrameLayout
         android:id="@+id/fragment_container"
@@ -13,6 +23,7 @@
         android:layout_above="@id/bottom_nav" />
 
     <!-- Alt gezinme menüsü -->
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
@@ -22,6 +33,11 @@
         app:itemIconTint="@color/nav_item_color"
         app:itemTextColor="@color/nav_item_color"
         app:menu="@menu/bottom_nav_menu"
+<<<<<<< HEAD
+        app:labelVisibilityMode="labeled"/>
+
+=======
         app:labelVisibilityMode="labeled" />
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
 
 </RelativeLayout>

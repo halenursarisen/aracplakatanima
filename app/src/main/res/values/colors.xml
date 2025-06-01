@@ -12,4 +12,11 @@
     <color name="nav_selected">#0C4A6E</color>     <!-- Seçili ikon/yazı rengi -->
     <color name="nav_unselected">#9CA3AF</color>   <!-- Seçili olmayan ikon/yazı -->
     <color name="nav_background">#F9FAFB</color>   <!-- Menü arka planı -->
+<<<<<<< HEAD
+    <color name="success_bg">#D4EDDA</color>
+    <color name="warning_bg">#FFF3CD</color>
+    <color name="system_bg">#D1ECF1</color>
+    <color name="default_bg">#F8F9FA</color>
+=======
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
 </resources>

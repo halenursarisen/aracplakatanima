@@ -1,22 +1,34 @@
 [versions]
 agp = "8.9.0"
+<<<<<<< HEAD
+kotlin = "2.0.21"
+=======
 kotlin = "1.9.23"               # BURASI 1.9.22 olacak
 kotlin_compose_plugin = "1.5.13" # Compose Compiler Plugin versiyonu 1.5.13
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
+<<<<<<< HEAD
+composeBom = "2024.09.00"
+=======
 composeBom = "2023.10.01"
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
 appcompat = "1.7.0"
 material = "1.12.0"
 activity = "1.10.1"
 constraintlayout = "2.2.1"
+<<<<<<< HEAD
+firebaseFirestoreKtx = "25.1.4"
+=======
 firebaseAuth = "23.2.0"
 credentials = "1.5.0"
 credentialsPlayServicesAuth = "1.5.0"
 googleid = "1.1.1"
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -37,13 +49,23 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+<<<<<<< HEAD
+firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
+=======
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 androidx-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+<<<<<<< HEAD
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+google-services = { id = "com.google.gms.google-services", version = "4.3.15" }
+
+=======
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin_compose_plugin" }
 google-services = { id = "com.google.gms.google-services", version = "4.3.15" }
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045

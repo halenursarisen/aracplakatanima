@@ -42,12 +42,31 @@
             android:backgroundTint="#0C4A6E"
             android:textColor="#111827" />
 
+<<<<<<< HEAD
+        <!-- Plaka -->
+        <EditText
+            android:id="@+id/editTextPlaka"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Plaka (örn: 34ABC123)"
+            android:inputType="text"
+            android:maxLength="10"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#0C4A6E"
+            android:textColor="#111827" />
+
+=======
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
         <!-- Şifre -->
         <EditText
             android:id="@+id/editTextPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+<<<<<<< HEAD
+            android:hint="Şifre (en az 6 karakter olmalı)"
+=======
             android:hint="Şifre"
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
             android:inputType="textPassword"
             android:layout_marginBottom="24dp"
             android:backgroundTint="#0C4A6E"
@@ -81,5 +100,19 @@
                 android:layout_marginStart="8dp" />
         </LinearLayout>
 
+<<<<<<< HEAD
+        <!-- Uyarı Metni -->
+        <TextView
+            android:id="@+id/textWarning"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="❗ Kiralık Araçlar Lütfen 'Misafir Giriş' Kısmından giriniz"
+            android:textColor="#FF0000"
+            android:textSize="14sp"
+            android:textStyle="italic"
+            android:layout_marginTop="16dp"
+            android:layout_gravity="center_horizontal" />
+=======
+>>>>>>> 44d3236e304bccba2f7b47a1a2eb8beafebd2045
     </LinearLayout>
 </ScrollView>
