@@ -3,6 +3,7 @@ package com.example.kullaniciapp.ui.theme
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -31,20 +32,17 @@ class BildirimAdapter(
         holder.textMessage.text = bildirim.mesaj
         holder.textTime.text = bildirim.zaman
 
-        // Bildirim tipine göre ikon
-        when (bildirim.tip) {
-            "success" -> holder.imageIcon.setImageResource(R.drawable.ic_success)
-            "warning" -> holder.imageIcon.setImageResource(R.drawable.ic_warning)
-            "system" -> holder.imageIcon.setImageResource(R.drawable.ic_system)
-            else -> holder.imageIcon.setImageResource(R.drawable.ic_info)
-        }
+        holder.imageIcon.setImageResource(R.drawable.ic_bildirim1)
 
-        // Çarpıya basıldığında listeden çıkar
+        val blinkAnimation = AnimationUtils.loadAnimation(holder.itemView.context, R.anim.blink)
+        holder.imageIcon.startAnimation(blinkAnimation)
+
         holder.imageClose.setOnClickListener {
             bildirimList.removeAt(holder.adapterPosition)
             notifyItemRemoved(holder.adapterPosition)
         }
     }
+
 
     override fun getItemCount(): Int = bildirimList.size
 }

@@ -849,7 +849,7 @@ class AdminHomeActivity : AppCompatActivity() {
                         val yeniBildirim = Bildirim(
                             mesaj = yeniMesaj,
                             tip = "manual",
-                            zaman = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+                            zaman = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
                         )
                         bildirimRef.child(yeniId).setValue(yeniBildirim)
                             .addOnSuccessListener {

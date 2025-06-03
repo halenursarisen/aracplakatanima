@@ -230,8 +230,8 @@ class HomeFragment : Fragment() {
                                     val plakalarNode = userSnapshot.child("plakalar")
                                     for (plakaSnap in plakalarNode.children) {
                                         val plakaKey = plakaSnap.key ?: continue
-                                        val cikisYapanRef = db.getReference("cikisYapanKullanicilar").child(plakaKey)
 
+                                        val cikisYapanRef = db.getReference("cikisYapanKullanicilar").child(plakaKey).child(uid)
                                         cikisYapanRef.setValue(userData).addOnSuccessListener {
                                             cikisYapanRef.child("gecmisOdeme").setValue(toplamUcret)
 
@@ -244,6 +244,7 @@ class HomeFragment : Fragment() {
                                             plakaRef.child("kat").setValue("")
                                         }
                                     }
+
 
 
                                     // Ekrandaki değerleri sıfırla
