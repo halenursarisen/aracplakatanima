@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8FAFC">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="16dp">
+
+        <!-- Logo -->
+        <ImageView
+            android:id="@+id/adminLogo"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/plaka_logo"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="Admin Logo" />
+
+        <!-- Başlık -->
+        <TextView
+            android:id="@+id/textAdminTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Admin Paneli"
+            android:textColor="#0C4A6E"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp" />
+
+        <!-- 📌 Yeni Eklenen TextView -->
+        <TextView
+            android:id="@+id/textViewMesaj"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mesaj buraya gelecek"
+            android:textSize="16sp"
+            android:layout_margin="16dp" />
+
+        <!-- Butonlar 2 sütun şeklinde -->
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:padding="6dp">
+
+            <Button
+                android:id="@+id/buttonPlakaIslemleri"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:text="PLAKA İŞLEMLERİ"
+                android:backgroundTint="#3B82F6"
+                android:textColor="#FFFFFF" />
+
+            <Button
+                android:id="@+id/buttonKullanicilar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:text="KULLANICILAR"
+                android:backgroundTint="#60A5FA"
+                android:textColor="#FFFFFF" />
+
+            <Button
+                android:id="@+id/buttonInfoKartDuzenle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:text="İNFO KART DÜZENLE"
+                android:backgroundTint="#93C5FD"
+                android:textColor="#0C4A6E" />
+
+            <Button
+                android:id="@+id/buttonYeniBildirim"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:text="BİLDİRİMLERİ YÖNET"
+                android:backgroundTint="#93C5FD"
+                android:textColor="#0C4A6E" />
+
+            <Button
+                android:id="@+id/buttonChatbotMesajlar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:text="CHATBOT MESAJLAR"
+                android:backgroundTint="#60A5FA"
+                android:textColor="#FFFFFF" />
+
+            <Button
+                android:id="@+id/buttonCikisListesi"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:text="ÇIKIŞ GEÇMİŞİ"
+                android:backgroundTint="#60A5FA"
+                android:textColor="#FFFFFF" />
+
+            <Button
+                android:id="@+id/buttonYeniKullanici"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:text="YENİ KULLANICI"
+                android:backgroundTint="#3B82F6"
+                android:textColor="#FFFFFF" />
+
+            <Button
+                android:id="@+id/buttonUyariliPlakalar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:text="UYARILI PLAKALAR"
+                android:backgroundTint="#3B82F6"
+                android:textColor="#FFFFFF" />
+
+            <Button
+                android:id="@+id/buttonAktifAbonelikler"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:text="AKTİF ABONELİKLER"
+                android:backgroundTint="#60A5FA"
+                android:textColor="#FFFFFF" />
+
+            <Button
+                android:id="@+id/buttonGecmisAbonelikler"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:text="GEÇMİŞ ABONELİKLER"
+                android:backgroundTint="#60A5FA"
+                android:textColor="#FFFFFF" />
+
+            <Button
+                android:id="@+id/buttonRezervasyonlar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:text="REZERVASYONLAR"
+                android:backgroundTint="#3B82F6"
+                android:textColor="#FFFFFF" />
+        </GridLayout>
+
+        <!-- Çıkış Butonu -->
+        <Button
+            android:id="@+id/buttonLogout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ÇIKIŞ YAP"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#1E40AF"
+            android:textColor="#FFFFFF" />
+
+    </LinearLayout>
+</ScrollView>

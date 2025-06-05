@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">kullaniciApp</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="prompt_kat_seciniz">Kat Seçiniz</string>
+    <string name="prompt_alan_seciniz">Alan Seçiniz</string>
+    <string name="edit_button">Düzenle</string>
+    <string name="delete_button">Sil</string>
+
+</resources>
