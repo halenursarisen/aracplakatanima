@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Kırmızı daire -->
+    <path
+        android:fillColor="#FF0000"
+        android:pathData="M12,2a10,10 0 1,0 0,20a10,10 0 1,0 0,-20z" />
+
+    <!-- Ünlem işareti gövdesi -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M11,6h2v8h-2z" />
+
+    <!-- Ünlem işareti noktası -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M11,16h2v2h-2z" />
+</vector>
